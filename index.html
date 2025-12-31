@@ -44,6 +44,11 @@
       overflow: hidden;
     }
 
+    .pane.current {
+      border-color: rgba(251, 191, 36, 0.3);
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(251, 191, 36, 0.1);
+    }
+
     .pane::before {
       content: '';
       position: absolute;
@@ -68,6 +73,26 @@
       font-weight: 600;
       color: #fff;
       letter-spacing: -0.5px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .current-indicator {
+      font-size: 1.2rem;
+      color: #fbbf24;
+      animation: pulse 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+      50% {
+        opacity: 0.6;
+        transform: scale(1.1);
+      }
     }
 
     .period-nav {
@@ -99,13 +124,6 @@
     .period-nav button.active {
       background: rgba(255, 255, 255, 0.12);
       color: #fff;
-    }
-
-    .period-dates {
-      font-size: 0.95rem;
-      color: rgba(255, 255, 255, 0.5);
-      margin-bottom: 24px;
-      font-weight: 400;
     }
 
     .summary {
@@ -352,17 +370,18 @@
 </head>
 <body>
   <div class="container">
-    <!-- Left Pane: Period 1 -->
+    <!-- Left Pane: Bi-Weekly 1 -->
     <div class="pane" id="pane-1">
       <div class="pane-header">
-        <div class="pane-title">Period 1</div>
+        <div class="pane-title">
+          Bi-Weekly 1
+          <span class="current-indicator" id="current-1" style="display: none;">⭐</span>
+        </div>
         <div class="period-nav">
           <button onclick="changePeriod(0, 1)" class="active">Current</button>
           <button onclick="changePeriod(1, 1)">Next</button>
         </div>
       </div>
-
-      <div class="period-dates" id="period-1-dates">Loading...</div>
 
       <div class="summary">
         <div class="summary-item">
@@ -404,17 +423,18 @@
       </div>
     </div>
 
-    <!-- Right Pane: Period 2 -->
+    <!-- Right Pane: Bi-Weekly 2 -->
     <div class="pane" id="pane-2">
       <div class="pane-header">
-        <div class="pane-title">Period 2</div>
+        <div class="pane-title">
+          Bi-Weekly 2
+          <span class="current-indicator" id="current-2" style="display: none;">⭐</span>
+        </div>
         <div class="period-nav">
           <button onclick="changePeriod(0, 2)">Current</button>
           <button onclick="changePeriod(1, 2)" class="active">Next</button>
         </div>
       </div>
-
-      <div class="period-dates" id="period-2-dates">Loading...</div>
 
       <div class="summary">
         <div class="summary-item">
@@ -521,10 +541,17 @@
 
     function updatePane(paneNum, offset) {
       const period = getPeriod(offset);
+      const pane = document.getElementById(`pane-${paneNum}`);
+      const currentIndicator = document.getElementById(`current-${paneNum}`);
       
-      // Update dates
-      document.getElementById(`period-${paneNum}-dates`).textContent = 
-        `${formatDate(period.start)} - ${formatDate(period.end)}`;
+      // Show star if this is the current period (offset = 0)
+      if (offset === 0) {
+        currentIndicator.style.display = 'inline';
+        pane.classList.add('current');
+      } else {
+        currentIndicator.style.display = 'none';
+        pane.classList.remove('current');
+      }
       
       // Get salary
       const salary = salaries[period.key] || 0;
