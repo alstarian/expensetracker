@@ -901,14 +901,15 @@
     }
 
     function togglePeriod(paneNum) {
+      // Toggle only THIS pane between current (0) and next (1)
       if (paneNum === 1) {
-        const newOffset = pane1Offset === 0 ? 1 : 0;
-        pane1Offset = newOffset;
-        pane2Offset = newOffset === 0 ? 1 : 0;
+        pane1Offset = pane1Offset === 0 ? 1 : 0;
+        // Make sure the other pane shows the opposite
+        pane2Offset = pane1Offset === 0 ? 1 : 0;
       } else {
-        const newOffset = pane2Offset === 0 ? 1 : 0;
-        pane2Offset = newOffset;
-        pane1Offset = newOffset === 0 ? 1 : 0;
+        pane2Offset = pane2Offset === 0 ? 1 : 0;
+        // Make sure the other pane shows the opposite
+        pane1Offset = pane2Offset === 0 ? 1 : 0;
       }
       
       savePaneStates();
