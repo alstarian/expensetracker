@@ -535,38 +535,59 @@
       text-align: right;
     }
 
+    .expense-item {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
+      padding: 14px 16px;
+      border-radius: 12px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      position: relative;
+      overflow: hidden;
+      transform: translateX(0);
+    }
+
+    .expense-item.swiped-open {
+      transform: translateX(-100px);
+    }
+
     .delete-btn {
-      background: rgba(239, 68, 68, 0);
+      background: linear-gradient(135deg, #ef4444, #dc2626);
       border: none;
-      color: #ef4444;
-      padding: 6px 8px;
-      border-radius: 8px;
+      color: #fff;
+      padding: 0 16px;
+      border-radius: 0;
       cursor: pointer;
       font-size: 1.1rem;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       font-weight: 700;
-      opacity: 0;
-      pointer-events: none;
       display: flex;
       align-items: center;
       justify-content: center;
       -webkit-user-select: none;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      height: 100%;
+      border-radius: 0 12px 12px 0;
+      min-width: 100px;
+      box-shadow: inset -2px 0 6px rgba(0, 0, 0, 0.2);
+    }
+
+    .delete-btn:active {
+      background: linear-gradient(135deg, #dc2626, #b91c1c);
+      transform: scale(1);
     }
 
     .expense-item:hover .delete-btn {
       opacity: 1;
-      pointer-events: auto;
-    }
-
-    .delete-btn:hover {
-      background: rgba(239, 68, 68, 0.25);
-      transform: scale(1.15);
-    }
-
-    .delete-btn:active {
-      transform: scale(1.05);
     }
 
     .empty-state {
@@ -1278,14 +1299,50 @@
               <div class="expense-cat">${new Date(exp.date).toLocaleDateString()}</div>
             </div>
             <div class="expense-amount">$${exp.amount.toFixed(2)}</div>
-            <button class="delete-btn" type="button">✕</button>
+            <button class="delete-btn" type="button">🗑️ Delete</button>
           </div>
         `;
       }).join('');
       
-      // EVENT DELEGATION - Delete button listener (iOS + Desktop compatible)
+      // SWIPE TO DELETE - iOS & Android friendly
+      listEl.querySelectorAll('.expense-item').forEach(item => {
+        let startX = 0;
+        let currentX = 0;
+        
+        item.addEventListener('touchstart', function(e) {
+          startX = e.touches[0].clientX;
+          currentX = startX;
+        }, false);
+        
+        item.addEventListener('touchmove', function(e) {
+          currentX = e.touches[0].clientX;
+          const diff = startX - currentX;
+          
+          // Only allow swiping left (diff > 0)
+          if (diff > 0) {
+            e.preventDefault();
+            const maxSwipe = 100;
+            const swipeAmount = Math.min(diff, maxSwipe);
+            this.style.transform = `translateX(-${swipeAmount}px)`;
+          }
+        }, { passive: false });
+        
+        item.addEventListener('touchend', function(e) {
+          const diff = startX - currentX;
+          
+          // If swiped more than 50px, open delete button
+          if (diff > 50) {
+            this.classList.add('swiped-open');
+          } else {
+            this.classList.remove('swiped-open');
+            this.style.transform = 'translateX(0)';
+          }
+        }, false);
+      });
+      
+      // DELETE BUTTON CLICK
       listEl.querySelectorAll('.delete-btn').forEach(btn => {
-        const handleDelete = function(e) {
+        btn.addEventListener('click', function(e) {
           e.preventDefault();
           e.stopPropagation();
           e.stopImmediatePropagation();
@@ -1302,11 +1359,7 @@
               updateDisplay();
             }
           }
-        };
-        
-        // Listen to BOTH click and touchend for iOS/Android compatibility
-        btn.addEventListener('click', handleDelete, false);
-        btn.addEventListener('touchend', handleDelete, false);
+        }, false);
       });
     }
 
@@ -1331,14 +1384,50 @@
               <div class="expense-cat">${util.month}</div>
             </div>
             <div class="expense-amount">$${util.amount.toFixed(2)}</div>
-            <button class="delete-btn" type="button">✕</button>
+            <button class="delete-btn" type="button">🗑️ Delete</button>
           </div>
         `;
       }).join('');
       
-      // EVENT DELEGATION - Delete button listener (iOS + Desktop compatible)
+      // SWIPE TO DELETE - iOS & Android friendly
+      listEl.querySelectorAll('.expense-item').forEach(item => {
+        let startX = 0;
+        let currentX = 0;
+        
+        item.addEventListener('touchstart', function(e) {
+          startX = e.touches[0].clientX;
+          currentX = startX;
+        }, false);
+        
+        item.addEventListener('touchmove', function(e) {
+          currentX = e.touches[0].clientX;
+          const diff = startX - currentX;
+          
+          // Only allow swiping left (diff > 0)
+          if (diff > 0) {
+            e.preventDefault();
+            const maxSwipe = 100;
+            const swipeAmount = Math.min(diff, maxSwipe);
+            this.style.transform = `translateX(-${swipeAmount}px)`;
+          }
+        }, { passive: false });
+        
+        item.addEventListener('touchend', function(e) {
+          const diff = startX - currentX;
+          
+          // If swiped more than 50px, open delete button
+          if (diff > 50) {
+            this.classList.add('swiped-open');
+          } else {
+            this.classList.remove('swiped-open');
+            this.style.transform = 'translateX(0)';
+          }
+        }, false);
+      });
+      
+      // DELETE BUTTON CLICK
       listEl.querySelectorAll('.delete-btn').forEach(btn => {
-        const handleDelete = function(e) {
+        btn.addEventListener('click', function(e) {
           e.preventDefault();
           e.stopPropagation();
           e.stopImmediatePropagation();
@@ -1355,11 +1444,7 @@
               updateMonthlyDisplay();
             }
           }
-        };
-        
-        // Listen to BOTH click and touchend for iOS/Android compatibility
-        btn.addEventListener('click', handleDelete, false);
-        btn.addEventListener('touchend', handleDelete, false);
+        }, false);
       });
     }
 
