@@ -414,6 +414,10 @@
       box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.15);
     }
 
+    input[type="date"] {
+      color-scheme: dark;
+    }
+
     input::placeholder {
       color: rgba(255, 255, 255, 0.35);
     }
@@ -783,6 +787,7 @@
       transition: all 0.3s;
       text-transform: uppercase;
       letter-spacing: 0.8px;
+      border: none;
     }
 
     .modal-btn.cancel {
@@ -842,6 +847,84 @@
       color: #10b981;
     }
 
+    /* Setup Wizard Styles */
+    .setup-wizard {
+      text-align: center;
+    }
+
+    .setup-wizard .modal-content {
+      max-width: 600px;
+    }
+
+    .wizard-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0px);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    .wizard-subtitle {
+      font-size: 1rem;
+      color: rgba(255, 255, 255, 0.7);
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+
+    .quick-dates {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .quick-date-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: white;
+      padding: 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .quick-date-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+    }
+
+    .quick-date-btn.selected {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(16, 185, 129, 0.15));
+      border-color: rgba(16, 185, 129, 0.4);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 24px 0;
+      color: rgba(255, 255, 255, 0.4);
+      font-size: 0.85rem;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
     @media (max-width: 1200px) {
       .container {
         grid-template-columns: 1fr;
@@ -860,6 +943,10 @@
       .analytics-table th,
       .analytics-table td {
         padding: 12px 8px;
+      }
+
+      .quick-dates {
+        grid-template-columns: 1fr;
       }
     }
   </style>
@@ -994,6 +1081,41 @@
     </div>
   </div>
 
+  <!-- Setup Wizard Modal -->
+  <div id="setup-wizard" class="modal setup-wizard">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">Welcome! 👋</div>
+      </div>
+      <div class="wizard-icon">💰</div>
+      <p class="wizard-subtitle">
+        Let's get you set up! When does your bi-weekly pay cycle start? 
+        This helps us track your expenses accurately across pay periods.
+      </p>
+
+      <div class="quick-dates" id="quick-dates">
+        <!-- Quick date buttons will be inserted here -->
+      </div>
+
+      <div class="divider">OR CHOOSE A DATE</div>
+
+      <div class="input-group">
+        <label class="input-label">Custom Start Date</label>
+        <input type="date" id="setup-start-date" max="2099-12-31">
+      </div>
+
+      <div class="modal-buttons">
+        <button class="modal-btn save" onclick="completeSetup()">
+          Get Started! 🚀
+        </button>
+      </div>
+
+      <p style="margin-top: 20px; font-size: 0.85rem; color: rgba(255,255,255,0.5);">
+        💡 Tip: Choose the first day of any recent pay period. You can track past and future periods!
+      </p>
+    </div>
+  </div>
+
   <!-- Edit Modal -->
   <div id="edit-modal" class="modal">
     <div class="modal-content">
@@ -1033,15 +1155,91 @@
     let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
     let salaries = JSON.parse(localStorage.getItem('salaries')) || {};
     let utilities = JSON.parse(localStorage.getItem('utilities')) || [];
-    let settings = JSON.parse(localStorage.getItem('paySettings')) || {
-      startDate: '2025-12-24'
-    };
+    let settings = JSON.parse(localStorage.getItem('paySettings')) || null;
 
     let currentPeriodOffset = 0;
     let currentMonthOffset = 0;
     
     let editingItem = null;
     let editingType = null;
+    let selectedQuickDate = null;
+
+    // Check if first time user
+    function checkFirstTimeUser() {
+      if (!settings || !settings.startDate) {
+        showSetupWizard();
+      } else {
+        updatePeriodDisplay();
+        updateMonthlyDisplay();
+      }
+    }
+
+    function showSetupWizard() {
+      generateQuickDates();
+      document.getElementById('setup-wizard').classList.add('active');
+    }
+
+    function generateQuickDates() {
+      const container = document.getElementById('quick-dates');
+      const today = new Date();
+      const dates = [];
+      
+      // Generate last 4 bi-weekly start dates
+      for (let i = 0; i < 4; i++) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - (i * 14));
+        
+        // Adjust to nearest Monday (common pay period start)
+        const dayOfWeek = date.getDay();
+        const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        date.setDate(date.getDate() + daysToMonday);
+        
+        dates.push(date);
+      }
+      
+      container.innerHTML = dates.map((date, index) => {
+        const formatted = date.toISOString().split('T')[0];
+        const display = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const label = index === 0 ? ' (This Week)' : '';
+        
+        return `
+          <button class="quick-date-btn" onclick="selectQuickDate('${formatted}')">
+            ${display}${label}
+          </button>
+        `;
+      }).join('');
+    }
+
+    function selectQuickDate(dateStr) {
+      selectedQuickDate = dateStr;
+      document.getElementById('setup-start-date').value = dateStr;
+      
+      document.querySelectorAll('.quick-date-btn').forEach(btn => {
+        btn.classList.remove('selected');
+      });
+      event.target.classList.add('selected');
+    }
+
+    function completeSetup() {
+      let startDate = document.getElementById('setup-start-date').value || selectedQuickDate;
+      
+      if (!startDate) {
+        alert('Please select or enter a start date for your pay cycle');
+        return;
+      }
+      
+      settings = {
+        startDate: startDate,
+        setupComplete: true,
+        setupDate: new Date().toISOString()
+      };
+      
+      localStorage.setItem('paySettings', JSON.stringify(settings));
+      document.getElementById('setup-wizard').classList.remove('active');
+      
+      updatePeriodDisplay();
+      updateMonthlyDisplay();
+    }
 
     document.getElementById('utility-type').addEventListener('change', function() {
       const customGroup = document.getElementById('custom-utility-group');
@@ -1204,7 +1402,7 @@
         utilities,
         settings,
         exportDate: new Date().toISOString(),
-        version: '2.0'
+        version: '2.1'
       };
       
       const dataStr = JSON.stringify(data, null, 2);
@@ -1233,14 +1431,16 @@
             transactions = imported.transactions || [];
             salaries = imported.salaries || {};
             utilities = imported.utilities || [];
-            settings = imported.settings || { startDate: '2025-12-24' };
+            settings = imported.settings || null;
             
             currentPeriodOffset = 0;
             
             localStorage.setItem('transactions', JSON.stringify(transactions));
             localStorage.setItem('salaries', JSON.stringify(salaries));
             localStorage.setItem('utilities', JSON.stringify(utilities));
-            localStorage.setItem('paySettings', JSON.stringify(settings));
+            if (settings) {
+              localStorage.setItem('paySettings', JSON.stringify(settings));
+            }
             
             updatePeriodDisplay();
             updateMonthlyDisplay();
@@ -1267,6 +1467,10 @@
     }
 
     function getPeriod(offset = 0) {
+      if (!settings || !settings.startDate) {
+        return null;
+      }
+      
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
@@ -1312,6 +1516,10 @@
     }
 
     function calculateCarryForward(upToPeriodNum) {
+      if (!settings || !settings.startDate) {
+        return 0;
+      }
+      
       let cumulativeSavings = 0;
       
       const startDate = new Date(settings.startDate + 'T00:00:00');
@@ -1345,6 +1553,8 @@
 
     function updatePeriodDisplay() {
       const period = getPeriod(currentPeriodOffset);
+      if (!period) return;
+      
       const pane = document.getElementById('pane-period');
       const star = document.getElementById('star-current');
       
@@ -1587,6 +1797,7 @@
 
     function addExpense() {
       const period = getPeriod(currentPeriodOffset);
+      if (!period) return;
       
       const category = document.getElementById('category-input').value.trim();
       const amount = parseFloat(document.getElementById('amount-input').value);
@@ -1658,6 +1869,7 @@
 
     document.getElementById('salary-input').addEventListener('change', function() {
       const period = getPeriod(currentPeriodOffset);
+      if (!period) return;
       salaries[period.key] = parseFloat(this.value) || 0;
       localStorage.setItem('salaries', JSON.stringify(salaries));
       updatePeriodDisplay();
@@ -1671,8 +1883,8 @@
       if (e.key === 'Enter') addUtility();
     });
 
-    updatePeriodDisplay();
-    updateMonthlyDisplay();
+    // Initialize app
+    checkFirstTimeUser();
   </script>
 </body>
 </html>
