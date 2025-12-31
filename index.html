@@ -517,6 +517,7 @@
       display: flex;
       opacity: 0;
       transition: opacity 0.3s;
+      pointer-events: none;
     }
 
     .expense-item.swiped {
@@ -525,6 +526,19 @@
 
     .expense-item.swiped + .swipe-actions {
       opacity: 1;
+      pointer-events: auto;
+    }
+
+    /* Desktop hover reveal */
+    @media (hover: hover) and (pointer: fine) {
+      .expense-item-wrapper:hover .expense-item {
+        transform: translateX(-160px);
+      }
+      
+      .expense-item-wrapper:hover .swipe-actions {
+        opacity: 1;
+        pointer-events: auto;
+      }
     }
 
     .action-btn {
@@ -547,8 +561,9 @@
       border-radius: 0;
     }
 
-    .action-btn.edit:active {
+    .action-btn.edit:hover {
       background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      transform: scale(1.05);
     }
 
     .action-btn.delete {
@@ -556,8 +571,9 @@
       border-radius: 0 12px 12px 0;
     }
 
-    .action-btn.delete:active {
+    .action-btn.delete:hover {
       background: linear-gradient(135deg, #dc2626, #b91c1c);
+      transform: scale(1.05);
     }
 
     .action-icon {
