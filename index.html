@@ -49,7 +49,7 @@
       max-width: 1600px;
       width: 100%;
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: 1fr 1fr;
       gap: 32px;
       position: relative;
       z-index: 1;
@@ -229,6 +229,7 @@
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       position: relative;
       z-index: 1;
+      gap: 20px;
     }
 
     .period-nav {
@@ -276,6 +277,7 @@
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       user-select: none;
       filter: grayscale(100%) brightness(0.5);
+      flex-shrink: 0;
     }
 
     .star-toggle:hover {
@@ -300,34 +302,9 @@
       }
     }
 
-    .period-dates {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 10px 16px;
-      border-radius: 12px;
-      margin-bottom: 20px;
-      text-align: center;
-      position: relative;
-      z-index: 1;
-    }
-
-    .period-dates-label {
-      font-size: 0.65rem;
-      color: rgba(255, 255, 255, 0.5);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 4px;
-    }
-
-    .period-dates-value {
-      font-size: 0.85rem;
-      color: rgba(255, 255, 255, 0.9);
-      font-weight: 600;
-    }
-
     .summary {
       display: grid;
-      grid-template-columns: repeat(3, 1fr);
+      grid-template-columns: repeat(2, 1fr);
       gap: 12px;
       margin-bottom: 28px;
       position: relative;
@@ -346,6 +323,10 @@
       box-shadow: 
         0 4px 16px rgba(0, 0, 0, 0.2),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    }
+
+    .summary-item.full-width {
+      grid-column: 1 / -1;
     }
 
     .summary-item::before {
@@ -397,6 +378,11 @@
     .summary-value.negative {
       color: #ef4444;
       text-shadow: 0 2px 12px rgba(239, 68, 68, 0.4);
+    }
+
+    .summary-value.info {
+      color: #8b5cf6;
+      text-shadow: 0 2px 12px rgba(139, 92, 246, 0.4);
     }
 
     .input-group {
@@ -707,6 +693,14 @@
       text-align: center;
     }
 
+    .pane-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.8px;
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
     .modal {
       display: none;
       position: fixed;
@@ -848,21 +842,13 @@
       color: #10b981;
     }
 
-    @media (max-width: 1400px) {
+    @media (max-width: 1200px) {
       .container {
-        grid-template-columns: 1fr 1fr;
-      }
-      
-      .pane.monthly {
-        grid-column: 1 / -1;
+        grid-template-columns: 1fr;
       }
     }
 
     @media (max-width: 768px) {
-      .container {
-        grid-template-columns: 1fr;
-      }
-
       .summary {
         grid-template-columns: 1fr;
       }
@@ -894,50 +880,58 @@
       <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
     </div>
 
-    <!-- Left Pane: Pay Period 1 -->
-    <div class="pane" id="pane-1">
+    <!-- Single Pay Period Panel -->
+    <div class="pane" id="pane-period">
       <div class="pane-header">
         <div class="period-nav">
-          <button onclick="changePeriod(1, -1)" title="Previous period">◀</button>
-          <div class="period-title" id="period-1-dates">Loading...</div>
-          <button onclick="changePeriod(1, 1)" title="Next period">▶</button>
+          <button onclick="changePeriod(-1)" title="Previous period">◀</button>
+          <div class="period-title" id="period-dates">Loading...</div>
+          <button onclick="changePeriod(1)" title="Next period">▶</button>
         </div>
-        <div class="star-toggle" id="star-1" onclick="togglePeriod(1)">⭐</div>
+        <div class="star-toggle" id="star-current" onclick="jumpToCurrent()">⭐</div>
       </div>
 
       <div class="summary">
         <div class="summary-item">
           <div class="summary-label">Salary</div>
-          <div class="summary-value" id="salary-1">$0</div>
+          <div class="summary-value" id="salary-display">$0</div>
         </div>
         <div class="summary-item">
           <div class="summary-label">Expenses</div>
-          <div class="summary-value" id="expenses-1">$0</div>
+          <div class="summary-value" id="expenses-display">$0</div>
         </div>
         <div class="summary-item">
-          <div class="summary-label">Savings</div>
-          <div class="summary-value" id="savings-1">$0</div>
+          <div class="summary-label">This Period Savings</div>
+          <div class="summary-value" id="savings-display">$0</div>
+        </div>
+        <div class="summary-item">
+          <div class="summary-label">Previous Balance</div>
+          <div class="summary-value info" id="carry-forward-display">$0</div>
+        </div>
+        <div class="summary-item full-width">
+          <div class="summary-label">Total Cumulative Savings</div>
+          <div class="summary-value" id="total-savings-display">$0</div>
         </div>
       </div>
 
       <div class="input-group">
         <label class="input-label">Salary</label>
-        <input type="number" id="salary-input-1" placeholder="Enter salary" step="0.01">
+        <input type="number" id="salary-input" placeholder="Enter salary" step="0.01">
       </div>
 
       <div class="input-group">
         <label class="input-label">Category</label>
-        <input type="text" id="category-1" placeholder="e.g., Groceries, Rent">
+        <input type="text" id="category-input" placeholder="e.g., Groceries, Rent">
       </div>
 
       <div class="input-group">
         <label class="input-label">Amount</label>
-        <input type="number" id="amount-1" placeholder="0.00" step="0.01">
+        <input type="number" id="amount-input" placeholder="0.00" step="0.01">
       </div>
 
-      <button class="btn" onclick="addExpense(1)">Add Expense</button>
+      <button class="btn" onclick="addExpense()">Add Expense</button>
 
-      <div class="expenses-list" id="expenses-list-1">
+      <div class="expenses-list" id="expenses-list">
         <div class="empty-state">
           <div class="empty-state-icon">📊</div>
           <div>No expenses yet</div>
@@ -945,61 +939,10 @@
       </div>
     </div>
 
-    <!-- Right Pane: Pay Period 2 -->
-    <div class="pane" id="pane-2">
-      <div class="pane-header">
-        <div class="period-nav">
-          <button onclick="changePeriod(2, -1)" title="Previous period">◀</button>
-          <div class="period-title" id="period-2-dates">Loading...</div>
-          <button onclick="changePeriod(2, 1)" title="Next period">▶</button>
-        </div>
-        <div class="star-toggle" id="star-2" onclick="togglePeriod(2)">⭐</div>
-      </div>
-
-      <div class="summary">
-        <div class="summary-item">
-          <div class="summary-label">Salary</div>
-          <div class="summary-value" id="salary-2">$0</div>
-        </div>
-        <div class="summary-item">
-          <div class="summary-label">Expenses</div>
-          <div class="summary-value" id="expenses-2">$0</div>
-        </div>
-        <div class="summary-item">
-          <div class="summary-label">Savings</div>
-          <div class="summary-value" id="savings-2">$0</div>
-        </div>
-      </div>
-
-      <div class="input-group">
-        <label class="input-label">Salary</label>
-        <input type="number" id="salary-input-2" placeholder="Enter salary" step="0.01">
-      </div>
-
-      <div class="input-group">
-        <label class="input-label">Category</label>
-        <input type="text" id="category-2" placeholder="e.g., Groceries, Rent">
-      </div>
-
-      <div class="input-group">
-        <label class="input-label">Amount</label>
-        <input type="number" id="amount-2" placeholder="0.00" step="0.01">
-      </div>
-
-      <button class="btn" onclick="addExpense(2)">Add Expense</button>
-
-      <div class="expenses-list" id="expenses-list-2">
-        <div class="empty-state">
-          <div class="empty-state-icon">📊</div>
-          <div>No expenses yet</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Third Pane: Monthly Utilities -->
+    <!-- Monthly Utilities Panel -->
     <div class="pane monthly" id="pane-monthly">
       <div class="pane-header">
-        <div class="pane-title" style="font-size: 1.4rem; font-weight: 700;">Monthly Utilities</div>
+        <div class="pane-title">Monthly Utilities</div>
       </div>
 
       <div class="month-nav">
@@ -1009,7 +952,7 @@
       </div>
 
       <div class="summary">
-        <div class="summary-item">
+        <div class="summary-item full-width">
           <div class="summary-label">Total Bills</div>
           <div class="summary-value" id="monthly-total">$0</div>
         </div>
@@ -1094,8 +1037,7 @@
       startDate: '2025-12-24'
     };
 
-    let pane1Offset = 0;
-    let pane2Offset = 1;
+    let currentPeriodOffset = 0;
     let currentMonthOffset = 0;
     
     let editingItem = null;
@@ -1230,7 +1172,7 @@
           transactions[index].category = newCategory;
           transactions[index].amount = newAmount;
           localStorage.setItem('transactions', JSON.stringify(transactions));
-          updateDisplay();
+          updatePeriodDisplay();
         }
       } else if (editingType === 'utility') {
         const index = utilities.findIndex(u => u.id === editingItem.id);
@@ -1255,22 +1197,14 @@
       }
     }
 
-    function savePaneStates() {
-      localStorage.setItem('paneStates', JSON.stringify({
-        pane1Offset: pane1Offset,
-        pane2Offset: pane2Offset
-      }));
-    }
-
     function exportData() {
       const data = {
         transactions,
         salaries,
         utilities,
         settings,
-        paneStates: { pane1Offset, pane2Offset },
         exportDate: new Date().toISOString(),
-        version: '1.5'
+        version: '2.0'
       };
       
       const dataStr = JSON.stringify(data, null, 2);
@@ -1301,16 +1235,14 @@
             utilities = imported.utilities || [];
             settings = imported.settings || { startDate: '2025-12-24' };
             
-            pane1Offset = 0;
-            pane2Offset = 1;
+            currentPeriodOffset = 0;
             
             localStorage.setItem('transactions', JSON.stringify(transactions));
             localStorage.setItem('salaries', JSON.stringify(salaries));
             localStorage.setItem('utilities', JSON.stringify(utilities));
             localStorage.setItem('paySettings', JSON.stringify(settings));
-            savePaneStates();
             
-            updateDisplay();
+            updatePeriodDisplay();
             updateMonthlyDisplay();
             alert('✅ Data imported successfully!');
           }
@@ -1324,28 +1256,14 @@
       event.target.value = '';
     }
 
-    // Navigate periods with arrows
-    function changePeriod(paneNum, direction) {
-      if (paneNum === 1) {
-        pane1Offset += direction;
-      } else {
-        pane2Offset += direction;
-      }
-      savePaneStates();
-      updateDisplay();
+    function changePeriod(direction) {
+      currentPeriodOffset += direction;
+      updatePeriodDisplay();
     }
 
-    function togglePeriod(paneNum) {
-      if (paneNum === 1) {
-        pane1Offset = 0;
-        pane2Offset = 1;
-      } else {
-        pane2Offset = 0;
-        pane1Offset = 1;
-      }
-      
-      savePaneStates();
-      updateDisplay();
+    function jumpToCurrent() {
+      currentPeriodOffset = 0;
+      updatePeriodDisplay();
     }
 
     function getPeriod(offset = 0) {
@@ -1368,7 +1286,8 @@
       return {
         start: periodStart,
         end: periodEnd,
-        key: `period-${periodStart.getFullYear()}-${String(periodStart.getMonth() + 1).padStart(2, '0')}-${String(periodStart.getDate()).padStart(2, '0')}`
+        key: `period-${periodStart.getFullYear()}-${String(periodStart.getMonth() + 1).padStart(2, '0')}-${String(periodStart.getDate()).padStart(2, '0')}`,
+        periodNum: targetPeriod
       };
     }
 
@@ -1383,10 +1302,6 @@
       };
     }
 
-    function formatDate(date) {
-      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-    }
-
     function formatDateShort(date) {
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
     }
@@ -1396,31 +1311,46 @@
       updateMonthlyDisplay();
     }
 
-    function checkPeriodRollover() {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+    function calculateCarryForward(upToPeriodNum) {
+      let cumulativeSavings = 0;
       
-      const currentPeriod = getPeriod(0);
+      const startDate = new Date(settings.startDate + 'T00:00:00');
       
-      if (today > currentPeriod.end) {
-        console.log('Period ended - periods will auto-update on next load');
+      for (let i = 0; i < upToPeriodNum; i++) {
+        const periodStart = new Date(startDate);
+        periodStart.setDate(periodStart.getDate() + (i * 14));
+        
+        const periodEnd = new Date(periodStart);
+        periodEnd.setDate(periodEnd.getDate() + 13);
+        periodEnd.setHours(23, 59, 59, 999);
+        
+        const periodKey = `period-${periodStart.getFullYear()}-${String(periodStart.getMonth() + 1).padStart(2, '0')}-${String(periodStart.getDate()).padStart(2, '0')}`;
+        
+        const salary = salaries[periodKey] || 0;
+        
+        const periodExpenses = transactions.filter(t => {
+          const tDate = new Date(t.date);
+          tDate.setHours(0, 0, 0, 0);
+          return tDate >= periodStart && tDate <= periodEnd;
+        });
+        
+        const totalExpenses = periodExpenses.reduce((sum, t) => sum + t.amount, 0);
+        const savings = salary - totalExpenses;
+        
+        cumulativeSavings += savings;
       }
-    }
-
-    function updateDisplay() {
-      updatePane(1, pane1Offset);
-      updatePane(2, pane2Offset);
-    }
-
-    function updatePane(paneNum, offset) {
-      const period = getPeriod(offset);
-      const pane = document.getElementById(`pane-${paneNum}`);
-      const star = document.getElementById(`star-${paneNum}`);
       
-      // Show date range with optional "CURRENT" label
+      return cumulativeSavings;
+    }
+
+    function updatePeriodDisplay() {
+      const period = getPeriod(currentPeriodOffset);
+      const pane = document.getElementById('pane-period');
+      const star = document.getElementById('star-current');
+      
       const dateRange = `${formatDateShort(period.start)} - ${formatDateShort(period.end)}`;
-      const isCurrent = offset === 0;
-      document.getElementById(`period-${paneNum}-dates`).textContent = 
+      const isCurrent = currentPeriodOffset === 0;
+      document.getElementById('period-dates').textContent = 
         isCurrent ? `${dateRange} (CURRENT)` : dateRange;
       
       if (isCurrent) {
@@ -1432,7 +1362,7 @@
       }
       
       const salary = salaries[period.key] || 0;
-      document.getElementById(`salary-input-${paneNum}`).value = salary || '';
+      document.getElementById('salary-input').value = salary || '';
       
       const periodExpenses = transactions.filter(t => {
         const tDate = new Date(t.date);
@@ -1441,16 +1371,27 @@
       });
       
       const totalExpenses = periodExpenses.reduce((sum, t) => sum + t.amount, 0);
-      const savings = salary - totalExpenses;
+      const thisPeriodSavings = salary - totalExpenses;
       
-      document.getElementById(`salary-${paneNum}`).textContent = `$${salary.toFixed(0)}`;
-      document.getElementById(`expenses-${paneNum}`).textContent = `$${totalExpenses.toFixed(0)}`;
+      const carryForward = calculateCarryForward(period.periodNum);
+      const totalCumulativeSavings = carryForward + thisPeriodSavings;
       
-      const savingsEl = document.getElementById(`savings-${paneNum}`);
-      savingsEl.textContent = `$${savings.toFixed(0)}`;
-      savingsEl.className = 'summary-value ' + (savings >= 0 ? 'positive' : 'negative');
+      document.getElementById('salary-display').textContent = `$${salary.toFixed(0)}`;
+      document.getElementById('expenses-display').textContent = `$${totalExpenses.toFixed(0)}`;
       
-      renderExpenses(paneNum, periodExpenses);
+      const savingsEl = document.getElementById('savings-display');
+      savingsEl.textContent = `$${thisPeriodSavings.toFixed(0)}`;
+      savingsEl.className = 'summary-value ' + (thisPeriodSavings >= 0 ? 'positive' : 'negative');
+      
+      const carryForwardEl = document.getElementById('carry-forward-display');
+      carryForwardEl.textContent = `$${carryForward.toFixed(0)}`;
+      carryForwardEl.className = 'summary-value info ' + (carryForward >= 0 ? 'positive' : 'negative');
+      
+      const totalSavingsEl = document.getElementById('total-savings-display');
+      totalSavingsEl.textContent = `$${totalCumulativeSavings.toFixed(0)}`;
+      totalSavingsEl.className = 'summary-value ' + (totalCumulativeSavings >= 0 ? 'positive' : 'negative');
+      
+      renderExpenses(periodExpenses);
     }
 
     function updateMonthlyDisplay() {
@@ -1465,8 +1406,8 @@
       renderUtilities(monthUtilities);
     }
 
-    function renderExpenses(paneNum, expenses) {
-      const listEl = document.getElementById(`expenses-list-${paneNum}`);
+    function renderExpenses(expenses) {
+      const listEl = document.getElementById('expenses-list');
       
       if (expenses.length === 0) {
         listEl.innerHTML = `
@@ -1481,7 +1422,7 @@
       listEl.innerHTML = expenses.slice().reverse().map((exp) => {
         return `
           <div class="expense-item-wrapper">
-            <div class="expense-item" data-expense-id="${exp.id}" data-pane="${paneNum}">
+            <div class="expense-item" data-expense-id="${exp.id}">
               <div class="expense-info">
                 <div class="expense-desc">${exp.category}</div>
                 <div class="expense-cat">${new Date(exp.date).toLocaleDateString()}</div>
@@ -1624,7 +1565,7 @@
             if (index !== -1) {
               transactions.splice(index, 1);
               localStorage.setItem('transactions', JSON.stringify(transactions));
-              updateDisplay();
+              updatePeriodDisplay();
             }
           } else {
             const index = utilities.findIndex(u => u.id === id);
@@ -1644,12 +1585,11 @@
       });
     }
 
-    function addExpense(paneNum) {
-      const offset = paneNum === 1 ? pane1Offset : pane2Offset;
-      const period = getPeriod(offset);
+    function addExpense() {
+      const period = getPeriod(currentPeriodOffset);
       
-      const category = document.getElementById(`category-${paneNum}`).value.trim();
-      const amount = parseFloat(document.getElementById(`amount-${paneNum}`).value);
+      const category = document.getElementById('category-input').value.trim();
+      const amount = parseFloat(document.getElementById('amount-input').value);
       
       if (!category || !amount || amount <= 0) {
         alert('Please enter both category and amount');
@@ -1666,10 +1606,10 @@
       transactions.push(transaction);
       localStorage.setItem('transactions', JSON.stringify(transactions));
       
-      document.getElementById(`category-${paneNum}`).value = '';
-      document.getElementById(`amount-${paneNum}`).value = '';
+      document.getElementById('category-input').value = '';
+      document.getElementById('amount-input').value = '';
       
-      updateDisplay();
+      updatePeriodDisplay();
     }
 
     function addUtility() {
@@ -1716,36 +1656,23 @@
       updateMonthlyDisplay();
     }
 
-    document.getElementById('salary-input-1').addEventListener('change', function() {
-      const period = getPeriod(pane1Offset);
+    document.getElementById('salary-input').addEventListener('change', function() {
+      const period = getPeriod(currentPeriodOffset);
       salaries[period.key] = parseFloat(this.value) || 0;
       localStorage.setItem('salaries', JSON.stringify(salaries));
-      updateDisplay();
+      updatePeriodDisplay();
     });
 
-    document.getElementById('salary-input-2').addEventListener('change', function() {
-      const period = getPeriod(pane2Offset);
-      salaries[period.key] = parseFloat(this.value) || 0;
-      localStorage.setItem('salaries', JSON.stringify(salaries));
-      updateDisplay();
-    });
-
-    document.getElementById('amount-1').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') addExpense(1);
-    });
-
-    document.getElementById('amount-2').addEventListener('keypress', function(e) {
-      if (e.key === 'Enter') addExpense(2);
+    document.getElementById('amount-input').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') addExpense();
     });
 
     document.getElementById('utility-amount').addEventListener('keypress', function(e) {
       if (e.key === 'Enter') addUtility();
     });
 
-    checkPeriodRollover();
-    updateDisplay();
+    updatePeriodDisplay();
     updateMonthlyDisplay();
-    setInterval(checkPeriodRollover, 3600000);
   </script>
 </body>
 </html>
