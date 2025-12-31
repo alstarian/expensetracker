@@ -492,13 +492,11 @@
       touch-action: pan-y;
       -webkit-user-select: none;
       user-select: none;
-      /* Hardware acceleration for smooth animations */
       will-change: transform;
       -webkit-transform: translate3d(0, 0, 0);
       transform: translate3d(0, 0, 0);
     }
 
-    /* Only add transition when NOT actively swiping */
     .expense-item.transitioning {
       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
@@ -537,7 +535,6 @@
       pointer-events: auto;
     }
 
-    /* Desktop hover reveal */
     @media (hover: hover) and (pointer: fine) {
       .expense-item-wrapper:hover .expense-item {
         transform: translate3d(-160px, 0, 0);
@@ -1068,13 +1065,9 @@
       startDate: '2025-12-24'
     };
 
-    let paneStates = JSON.parse(localStorage.getItem('paneStates')) || {
-      pane1Offset: 0,
-      pane2Offset: 1
-    };
-
-    let pane1Offset = paneStates.pane1Offset;
-    let pane2Offset = paneStates.pane2Offset;
+    // Initialize with current period always in pane 1
+    let pane1Offset = 0;  // Always current period
+    let pane2Offset = 1;  // Always next period
     let currentMonthOffset = 0;
     
     let editingItem = null;
@@ -1249,7 +1242,7 @@
         settings,
         paneStates: { pane1Offset, pane2Offset },
         exportDate: new Date().toISOString(),
-        version: '1.3'
+        version: '1.4'
       };
       
       const dataStr = JSON.stringify(data, null, 2);
@@ -1280,10 +1273,9 @@
             utilities = imported.utilities || [];
             settings = imported.settings || { startDate: '2025-12-24' };
             
-            if (imported.paneStates) {
-              pane1Offset = imported.paneStates.pane1Offset || 0;
-              pane2Offset = imported.paneStates.pane2Offset || 1;
-            }
+            // Reset to current period view
+            pane1Offset = 0;
+            pane2Offset = 1;
             
             localStorage.setItem('transactions', JSON.stringify(transactions));
             localStorage.setItem('salaries', JSON.stringify(salaries));
@@ -1305,13 +1297,16 @@
       event.target.value = '';
     }
 
+    // Updated toggle to swap which pane shows current period
     function togglePeriod(paneNum) {
       if (paneNum === 1) {
-        pane1Offset = pane1Offset === 0 ? 1 : 0;
-        pane2Offset = pane1Offset === 0 ? 1 : 0;
+        // Make pane 1 current
+        pane1Offset = 0;
+        pane2Offset = 1;
       } else {
-        pane2Offset = pane2Offset === 0 ? 1 : 0;
-        pane1Offset = pane2Offset === 0 ? 1 : 0;
+        // Make pane 2 current
+        pane2Offset = 0;
+        pane1Offset = 1;
       }
       
       savePaneStates();
@@ -1369,10 +1364,8 @@
       const currentPeriod = getPeriod(0);
       
       if (today > currentPeriod.end) {
-        console.log('Period ended - auto-advancing...');
-        pane1Offset = Math.max(0, pane1Offset - 1);
-        pane2Offset = Math.max(0, pane2Offset - 1);
-        savePaneStates();
+        console.log('Period ended - periods will auto-update on next load');
+        // Periods automatically adjust based on current date calculation
       }
     }
 
@@ -1389,6 +1382,7 @@
       document.getElementById(`period-${paneNum}-dates`).textContent = 
         `${formatDate(period.start)} - ${formatDate(period.end)}`;
       
+      // Auto-star the current period (offset === 0)
       if (offset === 0) {
         star.classList.add('active');
         pane.classList.add('current');
@@ -1527,7 +1521,6 @@
       const handleTouchStart = (e) => {
         startX = e.touches[0].clientX;
         isSwiping = false;
-        // Remove transition for instant tracking
         item.classList.remove('transitioning');
       };
       
@@ -1540,7 +1533,6 @@
           isSwiping = true;
         }
         
-        // Use translate3d for hardware acceleration and smooth 60fps
         if (diff > 0 && diff < 160) {
           item.style.transform = `translate3d(-${diff}px, 0, 0)`;
         } else if (diff <= 0) {
@@ -1552,7 +1544,6 @@
         if (!startX) return;
         const diff = startX - currentX;
         
-        // Add transition back for snap effect
         item.classList.add('transitioning');
         
         if (isSwiping && diff > swipeThreshold) {
@@ -1568,12 +1559,11 @@
         isSwiping = false;
       };
       
-      // Use passive: false for preventDefault capability if needed
       item.addEventListener('touchstart', handleTouchStart, { passive: true });
       item.addEventListener('touchmove', handleTouchMove, { passive: true });
       item.addEventListener('touchend', handleTouchEnd, { passive: true });
       
-      // Edit button click
+      // ONLY Edit button can trigger edit modal - no tap-to-edit on the item itself
       editBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         const id = type === 'expense' ? 
@@ -1583,7 +1573,6 @@
         item.classList.remove('swiped');
       });
       
-      // Delete button click
       deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         const id = type === 'expense' ? 
