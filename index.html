@@ -474,7 +474,7 @@
 
     .expense-item {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
-      padding: 14px;
+      padding: 14px 16px;
       border-radius: 12px;
       margin-bottom: 10px;
       display: flex;
@@ -529,28 +529,41 @@
       font-size: 1.1rem;
       font-weight: 700;
       color: #fff;
-      margin-right: 12px;
+      margin-right: 14px;
       text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+      min-width: 80px;
+      text-align: right;
     }
 
     .delete-btn {
-      background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.15));
-      border: 1px solid rgba(239, 68, 68, 0.3);
+      background: rgba(239, 68, 68, 0);
+      border: none;
       color: #ef4444;
-      padding: 7px 11px;
+      padding: 6px 8px;
       border-radius: 8px;
       cursor: pointer;
-      font-size: 0.8rem;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      font-weight: 600;
-      box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
+      font-size: 1.1rem;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      font-weight: 700;
+      opacity: 0;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .expense-item:hover .delete-btn {
+      opacity: 1;
+      pointer-events: auto;
     }
 
     .delete-btn:hover {
-      background: linear-gradient(135deg, rgba(239, 68, 68, 0.3), rgba(239, 68, 68, 0.2));
-      border-color: rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.25);
+      transform: scale(1.15);
+    }
+
+    .delete-btn:active {
       transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
     }
 
     .empty-state {
@@ -967,7 +980,6 @@
       const modal = document.getElementById('analytics-modal');
       const body = document.getElementById('analytics-body');
       
-      // Group utilities by type
       const utilityGroups = {};
       utilities.forEach(util => {
         if (!utilityGroups[util.type]) {
@@ -976,19 +988,17 @@
         utilityGroups[util.type].push(util.amount);
       });
       
-      // Calculate averages
       const analytics = Object.keys(utilityGroups).map(type => {
         const amounts = utilityGroups[type];
         const sum = amounts.reduce((acc, curr) => acc + curr, 0);
         const avg = sum / amounts.length;
         const count = amounts.length;
-        const total = sum;
         
         return {
           type,
           count,
           average: avg,
-          total: total
+          total: sum
         };
       }).sort((a, b) => b.average - a.average);
       
@@ -1041,7 +1051,6 @@
       document.getElementById('analytics-modal').classList.remove('active');
     }
 
-    // Close modal on outside click
     window.onclick = function(event) {
       const modal = document.getElementById('analytics-modal');
       if (event.target === modal) {
@@ -1259,16 +1268,16 @@
         return;
       }
       
-      listEl.innerHTML = expenses.slice().reverse().map(exp => {
+      listEl.innerHTML = expenses.slice().reverse().map((exp, displayIndex) => {
         const actualIndex = transactions.findIndex(t => t.id === exp.id);
         return `
-          <div class="expense-item">
+          <div class="expense-item" data-expense-id="${exp.id}" data-actual-index="${actualIndex}">
             <div class="expense-info">
               <div class="expense-desc">${exp.category}</div>
               <div class="expense-cat">${new Date(exp.date).toLocaleDateString()}</div>
             </div>
             <div class="expense-amount">$${exp.amount.toFixed(2)}</div>
-            <button class="delete-btn" onclick="deleteExpense(${actualIndex})">✕</button>
+            <button class="delete-btn" onclick="deleteExpenseById('${exp.id}', 1)">✕</button>
           </div>
         `;
       }).join('');
@@ -1290,13 +1299,13 @@
       listEl.innerHTML = utilityList.map(util => {
         const actualIndex = utilities.findIndex(u => u.id === util.id);
         return `
-          <div class="expense-item">
+          <div class="expense-item" data-utility-id="${util.id}" data-actual-index="${actualIndex}">
             <div class="expense-info">
               <div class="expense-desc">${util.type}</div>
               <div class="expense-cat">${util.month}</div>
             </div>
             <div class="expense-amount">$${util.amount.toFixed(2)}</div>
-            <button class="delete-btn" onclick="deleteUtility(${actualIndex})">✕</button>
+            <button class="delete-btn" onclick="deleteUtilityById('${util.id}')">✕</button>
           </div>
         `;
       }).join('');
@@ -1374,31 +1383,29 @@
       updateMonthlyDisplay();
     }
 
-    function deleteExpense(index) {
-      if (index < 0 || index >= transactions.length) {
-        console.error('Invalid index:', index);
-        alert('Error deleting expense. Please refresh the page.');
+    function deleteExpenseById(expenseId, paneNum) {
+      const index = transactions.findIndex(t => t.id === expenseId);
+      if (index === -1) {
+        console.error('Expense not found:', expenseId);
         return;
       }
       
       if (confirm('Delete this expense?')) {
-        const deleted = transactions.splice(index, 1);
-        console.log('Deleted expense:', deleted);
+        transactions.splice(index, 1);
         localStorage.setItem('transactions', JSON.stringify(transactions));
         updateDisplay();
       }
     }
 
-    function deleteUtility(index) {
-      if (index < 0 || index >= utilities.length) {
-        console.error('Invalid index:', index);
-        alert('Error deleting utility. Please refresh the page.');
+    function deleteUtilityById(utilityId) {
+      const index = utilities.findIndex(u => u.id === utilityId);
+      if (index === -1) {
+        console.error('Utility not found:', utilityId);
         return;
       }
       
       if (confirm('Delete this utility bill?')) {
-        const deleted = utilities.splice(index, 1);
-        console.log('Deleted utility:', deleted);
+        utilities.splice(index, 1);
         localStorage.setItem('utilities', JSON.stringify(utilities));
         updateMonthlyDisplay();
       }
