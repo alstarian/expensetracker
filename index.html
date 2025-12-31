@@ -351,14 +351,10 @@
       font-weight: 600;
     }
 
-    .transaction-item {
-      border-radius: 16px;
-      padding: 20px;
-      margin-bottom: 12px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      transition: all 0.3s ease;
+    /* Table Styles */
+    .table-container {
+      border-radius: 20px;
+      overflow: hidden;
       animation: slideIn 0.4s ease;
     }
 
@@ -373,41 +369,80 @@
       }
     }
 
-    .transaction-item:hover {
-      transform: translateX(8px);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+    }
+
+    thead {
       background: rgba(255, 255, 255, 0.08);
     }
 
-    .transaction-info {
-      flex: 1;
-    }
-
-    .transaction-description {
+    th {
+      padding: 16px 20px;
+      text-align: left;
+      font-size: 0.85rem;
       font-weight: 600;
-      margin-bottom: 4px;
-      color: white;
-      font-size: 1.05rem;
+      color: rgba(255, 255, 255, 0.7);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
 
-    .transaction-category {
+    th:last-child {
+      text-align: center;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background: rgba(255, 255, 255, 0.08);
+      transform: scale(1.01);
+    }
+
+    td {
+      padding: 16px 20px;
+      color: white;
+      font-size: 0.95rem;
+    }
+
+    td:last-child {
+      text-align: center;
+    }
+
+    .expense-description {
+      font-weight: 600;
+      color: white;
+    }
+
+    .expense-category {
       font-size: 0.85rem;
       color: rgba(255, 255, 255, 0.5);
+      margin-top: 2px;
     }
 
-    .transaction-amount {
-      font-size: 1.3rem;
+    .expense-amount {
       font-weight: 700;
-      margin-right: 16px;
-      color: white;
+      font-size: 1.1rem;
+      color: #ef4444;
+    }
+
+    .expense-date {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.9rem;
     }
 
     .delete-btn {
       background: rgba(239, 68, 68, 0.15);
       color: white;
       border: 1px solid rgba(239, 68, 68, 0.3);
-      border-radius: 10px;
-      padding: 8px 16px;
+      border-radius: 8px;
+      padding: 6px 14px;
       cursor: pointer;
       font-size: 0.85rem;
       transition: all 0.2s;
@@ -432,7 +467,7 @@
       opacity: 0.7;
     }
 
-    @media (max-width: 640px) {
+    @media (max-width: 768px) {
       .form-grid {
         grid-template-columns: 1fr;
       }
@@ -458,6 +493,28 @@
         top: 10px;
         right: 10px;
         padding: 10px 16px;
+      }
+
+      /* Responsive table */
+      table {
+        font-size: 0.85rem;
+      }
+
+      th, td {
+        padding: 12px 10px;
+      }
+
+      th {
+        font-size: 0.75rem;
+      }
+
+      .expense-amount {
+        font-size: 1rem;
+      }
+
+      .delete-btn {
+        padding: 4px 10px;
+        font-size: 0.8rem;
       }
     }
   </style>
@@ -629,27 +686,21 @@
         const startDate = new Date(settings.startDate);
         startDate.setHours(0, 0, 0, 0);
         
-        // Find which period today falls into or is closest to
         let currentPeriodNum;
         
         if (today >= startDate) {
-          // We're on or after the start date
           const daysDiff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
           currentPeriodNum = Math.floor(daysDiff / 14);
         } else {
-          // We're before the start date, go backwards
           const daysDiff = Math.ceil((today - startDate) / (1000 * 60 * 60 * 24));
           currentPeriodNum = Math.floor(daysDiff / 14);
         }
         
-        // Apply offset to get the target period
         const targetPeriod = currentPeriodNum + offset;
         
-        // Calculate period start (this is a payday)
         const periodStart = new Date(startDate);
         periodStart.setDate(periodStart.getDate() + (targetPeriod * 14));
         
-        // Calculate period end (day before next payday)
         const periodEnd = new Date(periodStart);
         periodEnd.setDate(periodEnd.getDate() + 13);
         periodEnd.setHours(23, 59, 59, 999);
@@ -660,22 +711,17 @@
           key: `biweekly-${periodStart.getFullYear()}-${String(periodStart.getMonth() + 1).padStart(2, '0')}-${String(periodStart.getDate()).padStart(2, '0')}`
         };
       } else {
-        // Monthly
         const payDay = settings.monthlyDay || 15;
         let periodStart, periodEnd;
         
-        // Determine current period
         if (today.getDate() >= payDay) {
-          // We're in the period that started on payDay of this month
           periodStart = new Date(today.getFullYear(), today.getMonth(), payDay);
           periodEnd = new Date(today.getFullYear(), today.getMonth() + 1, payDay - 1);
         } else {
-          // We're in the period that started on payDay of last month
           periodStart = new Date(today.getFullYear(), today.getMonth() - 1, payDay);
           periodEnd = new Date(today.getFullYear(), today.getMonth(), payDay - 1);
         }
         
-        // Apply offset
         periodStart.setMonth(periodStart.getMonth() + offset);
         periodEnd.setMonth(periodEnd.getMonth() + offset);
         periodEnd.setHours(23, 59, 59, 999);
@@ -703,7 +749,6 @@
     }
 
     function setDefaultExpenseDate() {
-      // Set expense date to today, but clamp to current viewed period
       const period = getPeriod(currentPeriodOffset);
       const today = new Date();
       
@@ -733,7 +778,6 @@
     function updateDisplay() {
       const period = getPeriod(currentPeriodOffset);
       
-      // Update labels
       const typeLabel = settings.frequency === 'biweekly' ? 'Bi-Weekly' : 'Monthly';
       document.getElementById('period-type-label').textContent = `Pay Period (${typeLabel})`;
       document.getElementById('salary-label').textContent = `${typeLabel} Salary`;
@@ -779,24 +823,40 @@
         return;
       }
 
-      document.getElementById('transactions-list').innerHTML = periodTransactions
-        .map((transaction) => {
-          const actualIndex = transactions.indexOf(transaction);
-          return `
-            <div class="transaction-item glass">
-              <div class="transaction-info">
-                <div class="transaction-description">${transaction.description}</div>
-                <div class="transaction-category">${transaction.category} • ${new Date(transaction.date).toLocaleDateString()}</div>
-              </div>
-              <div class="transaction-amount">
-                -$${transaction.amount.toFixed(2)}
-              </div>
-              <button class="delete-btn" onclick="deleteTransaction(${actualIndex})">Delete</button>
-            </div>
-          `;
-        })
-        .reverse()
-        .join('');
+      const tableHTML = `
+        <div class="table-container glass">
+          <table>
+            <thead>
+              <tr>
+                <th>Description</th>
+                <th>Date</th>
+                <th>Amount</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${periodTransactions.reverse().map((transaction) => {
+                const actualIndex = transactions.indexOf(transaction);
+                return `
+                  <tr>
+                    <td>
+                      <div class="expense-description">${transaction.description}</div>
+                      <div class="expense-category">${transaction.category}</div>
+                    </td>
+                    <td class="expense-date">${new Date(transaction.date).toLocaleDateString()}</td>
+                    <td class="expense-amount">-$${transaction.amount.toFixed(2)}</td>
+                    <td>
+                      <button class="delete-btn" onclick="deleteTransaction(${actualIndex})">Delete</button>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      document.getElementById('transactions-list').innerHTML = tableHTML;
     }
 
     function addTransaction(e) {
