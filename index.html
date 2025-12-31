@@ -159,6 +159,12 @@
       box-shadow: 0 4px 20px rgba(139, 92, 246, 0.2);
     }
 
+    .sync-btn.danger {
+      background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(239, 68, 68, 0.15));
+      border-color: rgba(239, 68, 68, 0.4);
+      box-shadow: 0 4px 20px rgba(239, 68, 68, 0.2);
+    }
+
     .pane {
       background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(15, 15, 15, 0.98) 100%);
       backdrop-filter: blur(30px) saturate(180%);
@@ -528,20 +534,6 @@
       transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    .expense-item::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: linear-gradient(135deg, rgba(255,255,255,0.08), transparent);
-      opacity: 0;
-      transition: opacity 0.3s;
-      pointer-events: none;
-      border-radius: 12px;
-    }
-
     .swipe-actions {
       position: absolute;
       right: 0;
@@ -567,7 +559,7 @@
         transform: translate3d(-160px, 0, 0);
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
-      
+
       .expense-item-wrapper:hover .swipe-actions {
         opacity: 1;
         pointer-events: auto;
@@ -853,7 +845,6 @@
       color: #10b981;
     }
 
-    /* Setup Wizard Styles */
     .setup-wizard {
       text-align: center;
     }
@@ -997,30 +988,21 @@
 </head>
 <body>
   <div class="container">
-    <!-- Sync Bar -->
     <div class="sync-bar">
-      <button class="sync-btn settings" onclick="showSettings()">
-        ⚙️ Settings
-      </button>
-      <button class="sync-btn analytics" onclick="showAnalytics()">
-        📊 Analytics
-      </button>
-      <button class="sync-btn export" onclick="exportData()">
-        📥 Export
-      </button>
-      <button class="sync-btn import" onclick="document.getElementById('import-file').click()">
-        📤 Import
-      </button>
+      <button class="sync-btn settings" onclick="showSettings()">⚙️ Settings</button>
+      <button class="sync-btn analytics" onclick="showAnalytics()">📊 Analytics</button>
+      <button class="sync-btn export" onclick="exportData()">📥 Export</button>
+      <button class="sync-btn import" onclick="document.getElementById('import-file').click()">📤 Import</button>
+      <button class="sync-btn danger" onclick="resetApp()" title="Reset app if broken">🔄 Reset</button>
       <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
     </div>
 
-    <!-- Single Pay Period Panel -->
     <div class="pane" id="pane-period">
       <div class="pane-header">
         <div class="period-nav">
-          <button onclick="changePeriod(-1)" title="Previous period">◀</button>
+          <button onclick="changePeriod(-1)">◀</button>
           <div class="period-title" id="period-dates">Loading...</div>
-          <button onclick="changePeriod(1)" title="Next period">▶</button>
+          <button onclick="changePeriod(1)">▶</button>
         </div>
         <div class="star-toggle" id="star-current" onclick="jumpToCurrent()">⭐</div>
       </div>
@@ -1073,7 +1055,6 @@
       </div>
     </div>
 
-    <!-- Monthly Utilities Panel -->
     <div class="pane monthly" id="pane-monthly">
       <div class="pane-header">
         <div class="pane-title">Monthly Utilities</div>
@@ -1098,7 +1079,6 @@
           <option value="">Select utility...</option>
           <option value="💧 Water">💧 Water</option>
           <option value="🔥 Gas">🔥 Gas</option>
-          <option value="🔥 Heat">🔥 Heat</option>
           <option value="⚡ Hydro">⚡ Hydro</option>
           <option value="📡 Internet">📡 Internet</option>
           <option value="📱 Phone">📱 Phone</option>
@@ -1129,7 +1109,6 @@
     </div>
   </div>
 
-  <!-- Setup Wizard Modal -->
   <div id="setup-wizard" class="modal setup-wizard">
     <div class="modal-content">
       <div class="modal-header">
@@ -1141,9 +1120,7 @@
         This helps us track your expenses accurately across pay periods.
       </p>
 
-      <div class="quick-dates" id="quick-dates">
-        <!-- Quick date buttons will be inserted here -->
-      </div>
+      <div class="quick-dates" id="quick-dates"></div>
 
       <div class="divider">OR CHOOSE A DATE</div>
 
@@ -1153,18 +1130,15 @@
       </div>
 
       <div class="modal-buttons">
-        <button class="modal-btn save" onclick="completeSetup()">
-          Get Started! 🚀
-        </button>
+        <button class="modal-btn save" onclick="completeSetup()">Get Started! 🚀</button>
       </div>
 
       <p style="margin-top: 20px; font-size: 0.85rem; color: rgba(255,255,255,0.5);">
-        💡 Tip: Choose the first day of any recent pay period. You can track past and future periods!
+        💡 Tip: Choose the first day of any recent pay period.
       </p>
     </div>
   </div>
 
-  <!-- Settings Modal -->
   <div id="settings-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -1183,10 +1157,7 @@
       </div>
 
       <div class="warning-box">
-        <p>
-          ⚠️ <strong>Important:</strong> Changing your pay cycle start date will recalculate all periods. 
-          Your expenses and salaries will be preserved, but they may appear in different pay periods based on the new start date.
-        </p>
+        <p>⚠️ <strong>Important:</strong> Changing your pay cycle start date will recalculate all periods.</p>
       </div>
 
       <div class="modal-buttons">
@@ -1196,7 +1167,6 @@
     </div>
   </div>
 
-  <!-- Edit Modal -->
   <div id="edit-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
@@ -1218,33 +1188,47 @@
     </div>
   </div>
 
-  <!-- Analytics Modal -->
   <div id="analytics-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <div class="modal-title">Utility Analytics - Yearly Averages</div>
+        <div class="modal-title">Utility Analytics</div>
         <button class="close-btn" onclick="closeAnalytics()">✕</button>
       </div>
-      <div id="analytics-body">
-        <!-- Analytics table will be inserted here -->
-      </div>
+      <div id="analytics-body"></div>
     </div>
   </div>
 
   <script>
-    let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
-    let salaries = JSON.parse(localStorage.getItem('salaries')) || {};
-    let utilities = JSON.parse(localStorage.getItem('utilities')) || [];
-    let settings = JSON.parse(localStorage.getItem('paySettings')) || null;
+    let transactions = [];
+    let salaries = {};
+    let utilities = [];
+    let settings = null;
 
     let currentPeriodOffset = 0;
     let currentMonthOffset = 0;
-    
     let editingItem = null;
     let editingType = null;
     let selectedQuickDate = null;
 
-    // Check if first time user
+    function loadData() {
+      try {
+        transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
+        salaries = JSON.parse(localStorage.getItem('salaries') || '{}');
+        utilities = JSON.parse(localStorage.getItem('utilities') || '[]');
+        settings = JSON.parse(localStorage.getItem('paySettings') || 'null');
+      } catch (error) {
+        console.error('Error loading data:', error);
+        alert('Data loading error. Try clicking Reset.');
+      }
+    }
+
+    function resetApp() {
+      if (confirm('⚠️ Delete ALL data and restart setup?')) {
+        localStorage.clear();
+        location.reload();
+      }
+    }
+
     function checkFirstTimeUser() {
       if (!settings || !settings.startDate) {
         showSetupWizard();
@@ -1263,60 +1247,40 @@
       const container = document.getElementById('quick-dates');
       const today = new Date();
       const dates = [];
-      
-      // Generate last 4 bi-weekly start dates
+
       for (let i = 0; i < 4; i++) {
         const date = new Date(today);
         date.setDate(date.getDate() - (i * 14));
-        
-        // Adjust to nearest Monday (common pay period start)
         const dayOfWeek = date.getDay();
         const daysToMonday = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
         date.setDate(date.getDate() + daysToMonday);
-        
         dates.push(date);
       }
-      
+
       container.innerHTML = dates.map((date, index) => {
         const formatted = date.toISOString().split('T')[0];
         const display = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         const label = index === 0 ? ' (This Week)' : '';
-        
-        return `
-          <button class="quick-date-btn" onclick="selectQuickDate('${formatted}')">
-            ${display}${label}
-          </button>
-        `;
+        return `<button class="quick-date-btn" onclick="selectQuickDate('${formatted}')">${display}${label}</button>`;
       }).join('');
     }
 
     function selectQuickDate(dateStr) {
       selectedQuickDate = dateStr;
       document.getElementById('setup-start-date').value = dateStr;
-      
-      document.querySelectorAll('.quick-date-btn').forEach(btn => {
-        btn.classList.remove('selected');
-      });
+      document.querySelectorAll('.quick-date-btn').forEach(btn => btn.classList.remove('selected'));
       event.target.classList.add('selected');
     }
 
     function completeSetup() {
       let startDate = document.getElementById('setup-start-date').value || selectedQuickDate;
-      
       if (!startDate) {
-        alert('Please select or enter a start date for your pay cycle');
+        alert('Please select a start date');
         return;
       }
-      
-      settings = {
-        startDate: startDate,
-        setupComplete: true,
-        setupDate: new Date().toISOString()
-      };
-      
+      settings = { startDate: startDate, setupComplete: true, setupDate: new Date().toISOString() };
       localStorage.setItem('paySettings', JSON.stringify(settings));
       document.getElementById('setup-wizard').classList.remove('active');
-      
       currentPeriodOffset = 0;
       updatePeriodDisplay();
       updateMonthlyDisplay();
@@ -1324,17 +1288,12 @@
 
     function showSettings() {
       if (!settings || !settings.startDate) {
-        alert('Please complete initial setup first');
+        alert('Complete setup first');
         return;
       }
-      
       const modal = document.getElementById('settings-modal');
-      document.getElementById('current-start-date').textContent = 
-        new Date(settings.startDate + 'T00:00:00').toLocaleDateString('en-US', { 
-          month: 'long', 
-          day: 'numeric', 
-          year: 'numeric' 
-        });
+      const dateObj = new Date(settings.startDate);
+      document.getElementById('current-start-date').textContent = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
       document.getElementById('settings-start-date').value = settings.startDate;
       modal.classList.add('active');
     }
@@ -1345,115 +1304,62 @@
 
     function saveSettings() {
       const newStartDate = document.getElementById('settings-start-date').value;
-      
       if (!newStartDate) {
-        alert('Please enter a valid start date');
+        alert('Enter a valid start date');
         return;
       }
-      
-      if (!confirm('Are you sure you want to change your pay cycle start date? This will recalculate all periods.')) {
-        return;
-      }
-      
+      if (!confirm('Change pay cycle start date? This recalculates all periods.')) return;
       settings.startDate = newStartDate;
       settings.lastModified = new Date().toISOString();
-      
       localStorage.setItem('paySettings', JSON.stringify(settings));
-      
       currentPeriodOffset = 0;
       updatePeriodDisplay();
       closeSettings();
-      
-      alert('✅ Pay cycle start date updated successfully!');
+      alert('✅ Pay cycle updated!');
     }
 
     document.getElementById('utility-type').addEventListener('change', function() {
-      const customGroup = document.getElementById('custom-utility-group');
-      if (this.value === 'Other') {
-        customGroup.style.display = 'block';
-      } else {
-        customGroup.style.display = 'none';
-      }
+      document.getElementById('custom-utility-group').style.display = this.value === 'Other' ? 'block' : 'none';
     });
 
     function showAnalytics() {
       const modal = document.getElementById('analytics-modal');
       const body = document.getElementById('analytics-body');
-      
       const utilityGroups = {};
       utilities.forEach(util => {
-        if (!utilityGroups[util.type]) {
-          utilityGroups[util.type] = [];
-        }
+        if (!utilityGroups[util.type]) utilityGroups[util.type] = [];
         utilityGroups[util.type].push(util.amount);
       });
-      
       const analytics = Object.keys(utilityGroups).map(type => {
         const amounts = utilityGroups[type];
         const sum = amounts.reduce((acc, curr) => acc + curr, 0);
-        const avg = sum / amounts.length;
-        const count = amounts.length;
-        
-        return {
-          type,
-          count,
-          average: avg,
-          total: sum
-        };
+        return { type, count: amounts.length, average: sum / amounts.length, total: sum };
       }).sort((a, b) => b.average - a.average);
-      
+
       if (analytics.length === 0) {
-        body.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-state-icon">📊</div>
-            <div>No utility data yet. Start adding monthly utilities to see analytics!</div>
-          </div>
-        `;
+        body.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📊</div><div>No utility data yet</div></div>';
       } else {
         const totalAvg = analytics.reduce((sum, item) => sum + item.average, 0);
-        
         body.innerHTML = `
           <table class="analytics-table">
-            <thead>
-              <tr>
-                <th>Utility</th>
-                <th>Months Tracked</th>
-                <th>Total Spent</th>
-                <th>Average/Month</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Utility</th><th>Months</th><th>Total</th><th>Average</th></tr></thead>
             <tbody>
-              ${analytics.map(item => `
-                <tr>
-                  <td>${item.type}</td>
-                  <td>${item.count} month${item.count !== 1 ? 's' : ''}</td>
-                  <td>$${item.total.toFixed(2)}</td>
-                  <td>$${item.average.toFixed(2)}</td>
-                </tr>
-              `).join('')}
+              ${analytics.map(item => `<tr><td>${item.type}</td><td>${item.count}</td><td>$${item.total.toFixed(2)}</td><td>$${item.average.toFixed(2)}</td></tr>`).join('')}
             </tbody>
-            <tfoot>
-              <tr style="border-top: 2px solid rgba(255,255,255,0.2); font-weight: 700;">
-                <td>Total Monthly Average</td>
-                <td></td>
-                <td></td>
-                <td style="font-size: 1.1rem;">$${totalAvg.toFixed(2)}</td>
-              </tr>
-            </tfoot>
-          </table>
-        `;
+            <tfoot><tr style="border-top: 2px solid rgba(255,255,255,0.2); font-weight: 700;">
+              <td>Total Monthly Average</td><td></td><td></td><td style="font-size: 1.1rem;">$${totalAvg.toFixed(2)}</td>
+            </tr></tfoot>
+          </table>`;
       }
-      
       modal.classList.add('active');
     }
 
     function closeAnalytics() {
       document.getElementById('analytics-modal').classList.remove('active');
     }
-    
+
     function openEditModal(id, type) {
       editingType = type;
-      
       if (type === 'expense') {
         editingItem = transactions.find(t => t.id === id);
         if (editingItem) {
@@ -1469,27 +1375,23 @@
           document.querySelector('#edit-modal .modal-title').textContent = 'Edit Utility';
         }
       }
-      
       document.getElementById('edit-modal').classList.add('active');
     }
-    
+
     function closeEditModal() {
       document.getElementById('edit-modal').classList.remove('active');
       editingItem = null;
       editingType = null;
     }
-    
+
     function saveEdit() {
       if (!editingItem) return;
-      
       const newCategory = document.getElementById('edit-category').value.trim();
       const newAmount = parseFloat(document.getElementById('edit-amount').value);
-      
       if (!newCategory || !newAmount || newAmount <= 0) {
-        alert('Please enter valid category and amount');
+        alert('Enter valid category and amount');
         return;
       }
-      
       if (editingType === 'expense') {
         const index = transactions.findIndex(t => t.id === editingItem.id);
         if (index !== -1) {
@@ -1507,81 +1409,53 @@
           updateMonthlyDisplay();
         }
       }
-      
       closeEditModal();
     }
 
     window.onclick = function(event) {
-      const analyticsModal = document.getElementById('analytics-modal');
-      const editModal = document.getElementById('edit-modal');
-      const settingsModal = document.getElementById('settings-modal');
-      if (event.target === analyticsModal) {
-        closeAnalytics();
-      } else if (event.target === editModal) {
-        closeEditModal();
-      } else if (event.target === settingsModal) {
-        closeSettings();
-      }
+      if (event.target === document.getElementById('analytics-modal')) closeAnalytics();
+      if (event.target === document.getElementById('edit-modal')) closeEditModal();
+      if (event.target === document.getElementById('settings-modal')) closeSettings();
     }
 
     function exportData() {
-      const data = {
-        transactions,
-        salaries,
-        utilities,
-        settings,
-        exportDate: new Date().toISOString(),
-        version: '2.2'
-      };
-      
-      const dataStr = JSON.stringify(data, null, 2);
-      const blob = new Blob([dataStr], { type: 'application/json' });
+      const data = { transactions, salaries, utilities, settings, exportDate: new Date().toISOString(), version: '2.3' };
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
-      const filename = `expense-tracker-${new Date().toISOString().split('T')[0]}.json`;
       link.href = url;
-      link.download = filename;
+      link.download = `expense-tracker-${new Date().toISOString().split('T')[0]}.json`;
       link.click();
       URL.revokeObjectURL(url);
-      
-      alert('✅ Data exported! Transfer this file to your other device and import it.');
+      alert('✅ Data exported!');
     }
 
     function importData(event) {
       const file = event.target.files[0];
       if (!file) return;
-
       const reader = new FileReader();
       reader.onload = function(e) {
         try {
           const imported = JSON.parse(e.target.result);
-          
-          if (confirm('Import data? This will replace your current data on this device.')) {
+          if (confirm('Import data? This replaces current data.')) {
             transactions = imported.transactions || [];
             salaries = imported.salaries || {};
             utilities = imported.utilities || [];
             settings = imported.settings || null;
-            
             currentPeriodOffset = 0;
-            
             localStorage.setItem('transactions', JSON.stringify(transactions));
             localStorage.setItem('salaries', JSON.stringify(salaries));
             localStorage.setItem('utilities', JSON.stringify(utilities));
-            if (settings) {
-              localStorage.setItem('paySettings', JSON.stringify(settings));
-            }
-            
+            if (settings) localStorage.setItem('paySettings', JSON.stringify(settings));
             updatePeriodDisplay();
             updateMonthlyDisplay();
-            alert('✅ Data imported successfully!');
+            alert('✅ Data imported!');
           }
         } catch (error) {
-          alert('❌ Error importing file. Make sure it\'s a valid expense tracker file.');
-          console.error(error);
+          alert('❌ Invalid file');
         }
       };
       reader.readAsText(file);
-      
       event.target.value = '';
     }
 
@@ -1596,32 +1470,35 @@
     }
 
     function getPeriod(offset = 0) {
-      if (!settings || !settings.startDate) {
+      try {
+        if (!settings || !settings.startDate) return null;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const startDate = new Date(settings.startDate);
+        if (isNaN(startDate.getTime())) {
+          alert('Invalid start date. Reset app.');
+          return null;
+        }
+        startDate.setHours(0, 0, 0, 0);
+        const millisDiff = today.getTime() - startDate.getTime();
+        const daysDiff = Math.floor(millisDiff / (1000 * 60 * 60 * 24));
+        const currentPeriodNum = Math.floor(daysDiff / 14);
+        const targetPeriod = currentPeriodNum + offset;
+        const periodStart = new Date(startDate);
+        periodStart.setDate(periodStart.getDate() + (targetPeriod * 14));
+        const periodEnd = new Date(periodStart);
+        periodEnd.setDate(periodEnd.getDate() + 13);
+        periodEnd.setHours(23, 59, 59, 999);
+        return {
+          start: periodStart,
+          end: periodEnd,
+          key: `period-${periodStart.getFullYear()}-${String(periodStart.getMonth() + 1).padStart(2, '0')}-${String(periodStart.getDate()).padStart(2, '0')}`,
+          periodNum: targetPeriod
+        };
+      } catch (error) {
+        console.error('Error in getPeriod:', error);
         return null;
       }
-      
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      const startDate = new Date(settings.startDate + 'T00:00:00');
-      const millisDiff = today.getTime() - startDate.getTime();
-      const daysDiff = Math.floor(millisDiff / (1000 * 60 * 60 * 24));
-      const currentPeriodNum = Math.floor(daysDiff / 14);
-      const targetPeriod = currentPeriodNum + offset;
-      
-      const periodStart = new Date(startDate);
-      periodStart.setDate(periodStart.getDate() + (targetPeriod * 14));
-      
-      const periodEnd = new Date(periodStart);
-      periodEnd.setDate(periodEnd.getDate() + 13);
-      periodEnd.setHours(23, 59, 59, 999);
-      
-      return {
-        start: periodStart,
-        end: periodEnd,
-        key: `period-${periodStart.getFullYear()}-${String(periodStart.getMonth() + 1).padStart(2, '0')}-${String(periodStart.getDate()).padStart(2, '0')}`,
-        periodNum: targetPeriod
-      };
     }
 
     function getMonth(offset = 0) {
@@ -1645,53 +1522,37 @@
     }
 
     function calculateCarryForward(upToPeriodNum) {
-      if (!settings || !settings.startDate) {
-        return 0;
-      }
-      
+      if (!settings || !settings.startDate) return 0;
       let cumulativeSavings = 0;
-      
-      const startDate = new Date(settings.startDate + 'T00:00:00');
-      
+      const startDate = new Date(settings.startDate);
+      startDate.setHours(0, 0, 0, 0);
       for (let i = 0; i < upToPeriodNum; i++) {
         const periodStart = new Date(startDate);
         periodStart.setDate(periodStart.getDate() + (i * 14));
-        
         const periodEnd = new Date(periodStart);
         periodEnd.setDate(periodEnd.getDate() + 13);
         periodEnd.setHours(23, 59, 59, 999);
-        
         const periodKey = `period-${periodStart.getFullYear()}-${String(periodStart.getMonth() + 1).padStart(2, '0')}-${String(periodStart.getDate()).padStart(2, '0')}`;
-        
         const salary = salaries[periodKey] || 0;
-        
         const periodExpenses = transactions.filter(t => {
           const tDate = new Date(t.date);
           tDate.setHours(0, 0, 0, 0);
           return tDate >= periodStart && tDate <= periodEnd;
         });
-        
         const totalExpenses = periodExpenses.reduce((sum, t) => sum + t.amount, 0);
-        const savings = salary - totalExpenses;
-        
-        cumulativeSavings += savings;
+        cumulativeSavings += (salary - totalExpenses);
       }
-      
       return cumulativeSavings;
     }
 
     function updatePeriodDisplay() {
       const period = getPeriod(currentPeriodOffset);
       if (!period) return;
-      
       const pane = document.getElementById('pane-period');
       const star = document.getElementById('star-current');
-      
       const dateRange = `${formatDateShort(period.start)} - ${formatDateShort(period.end)}`;
       const isCurrent = currentPeriodOffset === 0;
-      document.getElementById('period-dates').textContent = 
-        isCurrent ? `${dateRange} (CURRENT)` : dateRange;
-      
+      document.getElementById('period-dates').textContent = isCurrent ? `${dateRange} (CURRENT)` : dateRange;
       if (isCurrent) {
         star.classList.add('active');
         pane.classList.add('current');
@@ -1699,173 +1560,117 @@
         star.classList.remove('active');
         pane.classList.remove('current');
       }
-      
       const salary = salaries[period.key] || 0;
       document.getElementById('salary-input').value = salary || '';
-      
       const periodExpenses = transactions.filter(t => {
         const tDate = new Date(t.date);
         tDate.setHours(0, 0, 0, 0);
         return tDate >= period.start && tDate <= period.end;
       });
-      
       const totalExpenses = periodExpenses.reduce((sum, t) => sum + t.amount, 0);
       const thisPeriodSavings = salary - totalExpenses;
-      
       const carryForward = calculateCarryForward(period.periodNum);
       const totalCumulativeSavings = carryForward + thisPeriodSavings;
-      
       document.getElementById('salary-display').textContent = `$${salary.toFixed(0)}`;
       document.getElementById('expenses-display').textContent = `$${totalExpenses.toFixed(0)}`;
-      
       const savingsEl = document.getElementById('savings-display');
       savingsEl.textContent = `$${thisPeriodSavings.toFixed(0)}`;
       savingsEl.className = 'summary-value ' + (thisPeriodSavings >= 0 ? 'positive' : 'negative');
-      
       const carryForwardEl = document.getElementById('carry-forward-display');
       carryForwardEl.textContent = `$${carryForward.toFixed(0)}`;
       carryForwardEl.className = 'summary-value info ' + (carryForward >= 0 ? 'positive' : 'negative');
-      
       const totalSavingsEl = document.getElementById('total-savings-display');
       totalSavingsEl.textContent = `$${totalCumulativeSavings.toFixed(0)}`;
       totalSavingsEl.className = 'summary-value ' + (totalCumulativeSavings >= 0 ? 'positive' : 'negative');
-      
       renderExpenses(periodExpenses);
     }
 
     function updateMonthlyDisplay() {
       const month = getMonth(currentMonthOffset);
       document.getElementById('month-display').textContent = month.display;
-      
       const monthUtilities = utilities.filter(u => u.month === month.key);
       const total = monthUtilities.reduce((sum, u) => sum + u.amount, 0);
-      
       document.getElementById('monthly-total').textContent = `$${total.toFixed(0)}`;
-      
       renderUtilities(monthUtilities);
     }
 
     function renderExpenses(expenses) {
       const listEl = document.getElementById('expenses-list');
-      
       if (expenses.length === 0) {
-        listEl.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-state-icon">📊</div>
-            <div>No expenses yet</div>
-          </div>
-        `;
+        listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">📊</div><div>No expenses yet</div></div>';
         return;
       }
-      
-      listEl.innerHTML = expenses.slice().reverse().map((exp) => {
-        return `
-          <div class="expense-item-wrapper">
-            <div class="expense-item" data-expense-id="${exp.id}">
-              <div class="expense-info">
-                <div class="expense-desc">${exp.category}</div>
-                <div class="expense-cat">${new Date(exp.date).toLocaleDateString()}</div>
-              </div>
-              <div class="expense-amount">$${exp.amount.toFixed(2)}</div>
+      listEl.innerHTML = expenses.slice().reverse().map((exp) => `
+        <div class="expense-item-wrapper">
+          <div class="expense-item" data-expense-id="${exp.id}">
+            <div class="expense-info">
+              <div class="expense-desc">${exp.category}</div>
+              <div class="expense-cat">${new Date(exp.date).toLocaleDateString()}</div>
             </div>
-            <div class="swipe-actions">
-              <button class="action-btn edit">
-                <span class="action-icon">✏️</span>
-                <span>Edit</span>
-              </button>
-              <button class="action-btn delete">
-                <span class="action-icon">🗑️</span>
-                <span>Delete</span>
-              </button>
-            </div>
+            <div class="expense-amount">$${exp.amount.toFixed(2)}</div>
           </div>
-        `;
-      }).join('');
-      
-      listEl.querySelectorAll('.expense-item').forEach(item => {
-        setupSwipeActions(item, 'expense');
-      });
+          <div class="swipe-actions">
+            <button class="action-btn edit"><span class="action-icon">✏️</span><span>Edit</span></button>
+            <button class="action-btn delete"><span class="action-icon">🗑️</span><span>Delete</span></button>
+          </div>
+        </div>
+      `).join('');
+      listEl.querySelectorAll('.expense-item').forEach(item => setupSwipeActions(item, 'expense'));
     }
 
     function renderUtilities(utilityList) {
       const listEl = document.getElementById('utilities-list');
-      
       if (utilityList.length === 0) {
-        listEl.innerHTML = `
-          <div class="empty-state">
-            <div class="empty-state-icon">💡</div>
-            <div>No utilities yet</div>
-          </div>
-        `;
+        listEl.innerHTML = '<div class="empty-state"><div class="empty-state-icon">💡</div><div>No utilities yet</div></div>';
         return;
       }
-      
-      listEl.innerHTML = utilityList.map(util => {
-        return `
-          <div class="expense-item-wrapper">
-            <div class="expense-item" data-utility-id="${util.id}">
-              <div class="expense-info">
-                <div class="expense-desc">${util.type}</div>
-                <div class="expense-cat">${util.month}</div>
-              </div>
-              <div class="expense-amount">$${util.amount.toFixed(2)}</div>
+      listEl.innerHTML = utilityList.map(util => `
+        <div class="expense-item-wrapper">
+          <div class="expense-item" data-utility-id="${util.id}">
+            <div class="expense-info">
+              <div class="expense-desc">${util.type}</div>
+              <div class="expense-cat">${util.month}</div>
             </div>
-            <div class="swipe-actions">
-              <button class="action-btn edit">
-                <span class="action-icon">✏️</span>
-                <span>Edit</span>
-              </button>
-              <button class="action-btn delete">
-                <span class="action-icon">🗑️</span>
-                <span>Delete</span>
-              </button>
-            </div>
+            <div class="expense-amount">$${util.amount.toFixed(2)}</div>
           </div>
-        `;
-      }).join('');
-      
-      listEl.querySelectorAll('.expense-item').forEach(item => {
-        setupSwipeActions(item, 'utility');
-      });
+          <div class="swipe-actions">
+            <button class="action-btn edit"><span class="action-icon">✏️</span><span>Edit</span></button>
+            <button class="action-btn delete"><span class="action-icon">🗑️</span><span>Delete</span></button>
+          </div>
+        </div>
+      `).join('');
+      listEl.querySelectorAll('.expense-item').forEach(item => setupSwipeActions(item, 'utility'));
     }
-    
+
     function setupSwipeActions(item, type) {
-      let startX = 0;
-      let currentX = 0;
-      let isSwiping = false;
+      let startX = 0, currentX = 0, isSwiping = false;
       const swipeThreshold = 60;
       const wrapper = item.closest('.expense-item-wrapper');
       const editBtn = wrapper.querySelector('.action-btn.edit');
       const deleteBtn = wrapper.querySelector('.action-btn.delete');
-      
-      const handleTouchStart = (e) => {
+
+      item.addEventListener('touchstart', (e) => {
         startX = e.touches[0].clientX;
         isSwiping = false;
         item.classList.remove('transitioning');
-      };
-      
-      const handleTouchMove = (e) => {
+      }, { passive: true });
+
+      item.addEventListener('touchmove', (e) => {
         if (!startX) return;
         currentX = e.touches[0].clientX;
         const diff = startX - currentX;
-        
-        if (Math.abs(diff) > 5) {
-          isSwiping = true;
-        }
-        
+        if (Math.abs(diff) > 5) isSwiping = true;
         if (diff > 0 && diff < 160) {
           item.style.transform = `translate3d(-${diff}px, 0, 0)`;
         } else if (diff <= 0) {
-          item.style.transform = 'translate3d(0, 0, 0)`;
+          item.style.transform = 'translate3d(0, 0, 0)';
         }
-      };
-      
-      const handleTouchEnd = (e) => {
+      }, { passive: true });
+
+      item.addEventListener('touchend', (e) => {
         if (!startX) return;
         const diff = startX - currentX;
-        
         item.classList.add('transitioning');
-        
         if (isSwiping && diff > swipeThreshold) {
           item.classList.add('swiped');
           item.style.transform = '';
@@ -1873,31 +1678,19 @@
           item.classList.remove('swiped');
           item.style.transform = '';
         }
-        
-        startX = 0;
-        currentX = 0;
-        isSwiping = false;
-      };
-      
-      item.addEventListener('touchstart', handleTouchStart, { passive: true });
-      item.addEventListener('touchmove', handleTouchMove, { passive: true });
-      item.addEventListener('touchend', handleTouchEnd, { passive: true });
-      
+        startX = 0; currentX = 0; isSwiping = false;
+      }, { passive: true });
+
       editBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const id = type === 'expense' ? 
-          parseInt(item.dataset.expenseId) : 
-          parseInt(item.dataset.utilityId);
+        const id = type === 'expense' ? parseInt(item.dataset.expenseId) : parseInt(item.dataset.utilityId);
         openEditModal(id, type);
         item.classList.remove('swiped');
       });
-      
+
       deleteBtn.addEventListener('click', (e) => {
         e.stopPropagation();
-        const id = type === 'expense' ? 
-          parseInt(item.dataset.expenseId) : 
-          parseInt(item.dataset.utilityId);
-        
+        const id = type === 'expense' ? parseInt(item.dataset.expenseId) : parseInt(item.dataset.utilityId);
         if (confirm('Delete this ' + type + '?')) {
           if (type === 'expense') {
             const index = transactions.findIndex(t => t.id === id);
@@ -1916,83 +1709,55 @@
           }
         }
       });
-      
+
       document.addEventListener('click', (e) => {
-        if (!wrapper.contains(e.target)) {
-          item.classList.remove('swiped');
-        }
+        if (!wrapper.contains(e.target)) item.classList.remove('swiped');
       });
     }
 
     function addExpense() {
       const period = getPeriod(currentPeriodOffset);
       if (!period) return;
-      
       const category = document.getElementById('category-input').value.trim();
       const amount = parseFloat(document.getElementById('amount-input').value);
-      
       if (!category || !amount || amount <= 0) {
-        alert('Please enter both category and amount');
+        alert('Enter both category and amount');
         return;
       }
-      
-      const transaction = {
-        id: Date.now(),
-        category,
-        amount,
-        date: period.start.toISOString()
-      };
-      
+      const transaction = { id: Date.now(), category, amount, date: period.start.toISOString() };
       transactions.push(transaction);
       localStorage.setItem('transactions', JSON.stringify(transactions));
-      
       document.getElementById('category-input').value = '';
       document.getElementById('amount-input').value = '';
-      
       updatePeriodDisplay();
     }
 
     function addUtility() {
-      const typeSelect = document.getElementById('utility-type');
-      let type = typeSelect.value;
-      
+      let type = document.getElementById('utility-type').value;
       if (!type) {
-        alert('Please select a utility type');
+        alert('Select a utility type');
         return;
       }
-      
       if (type === 'Other') {
         type = document.getElementById('custom-utility').value.trim();
         if (!type) {
-          alert('Please enter a custom utility name');
+          alert('Enter a custom utility name');
           return;
         }
       }
-      
       const amount = parseFloat(document.getElementById('utility-amount').value);
-      
       if (!amount || amount <= 0) {
-        alert('Please enter an amount');
+        alert('Enter an amount');
         return;
       }
-      
       const month = getMonth(currentMonthOffset);
-      
-      const utility = {
-        id: Date.now(),
-        type,
-        amount,
-        month: month.key
-      };
-      
+      const utility = { id: Date.now(), type, amount, month: month.key };
       utilities.push(utility);
       localStorage.setItem('utilities', JSON.stringify(utilities));
-      
-      typeSelect.value = '';
+      document.getElementById('utility-type').value = '';
       document.getElementById('custom-utility').value = '';
       document.getElementById('utility-amount').value = '';
       document.getElementById('custom-utility-group').style.display = 'none';
-      
       updateMonthlyDisplay();
     }
 
@@ -2012,7 +1777,7 @@
       if (e.key === 'Enter') addUtility();
     });
 
-    // Initialize app
+    loadData();
     checkFirstTimeUser();
   </script>
 </body>
