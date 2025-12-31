@@ -476,25 +476,7 @@
     .expense-item-wrapper {
       position: relative;
       margin-bottom: 10px;
-      overflow: hidden;
-      border-radius: 12px;
-    }
-
-    .expense-item-swipe-bg {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      width: 100px;
-      background: linear-gradient(135deg, #ef4444, #dc2626);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 700;
-      font-size: 0.85rem;
-      border-radius: 12px;
-      z-index: 1;
+      overflow: visible;
     }
 
     .expense-item {
@@ -508,7 +490,6 @@
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
       position: relative;
-      z-index: 2;
       cursor: pointer;
       touch-action: pan-y;
       -webkit-user-select: none;
@@ -526,14 +507,40 @@
       opacity: 0;
       transition: opacity 0.3s;
       pointer-events: none;
+      border-radius: 12px;
     }
 
     .expense-item:hover::before {
       opacity: 1;
     }
 
+    .delete-btn {
+      position: absolute;
+      right: -90px;
+      top: 0;
+      bottom: 0;
+      width: 80px;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      border: none;
+      border-radius: 0 12px 12px 0;
+      color: white;
+      font-weight: 700;
+      font-size: 0.85rem;
+      cursor: pointer;
+      opacity: 0;
+      transition: opacity 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+    }
+
     .expense-item.swiped {
-      transform: translateX(-100px);
+      transform: translateX(-80px);
+    }
+
+    .expense-item.swiped + .delete-btn {
+      opacity: 1;
     }
 
     .expense-info {
@@ -1025,7 +1032,7 @@
     let currentMonthOffset = 0;
     
     let editingItem = null;
-    let editingType = null; // 'expense' or 'utility'
+    let editingType = null;
 
     document.getElementById('utility-type').addEventListener('change', function() {
       const customGroup = document.getElementById('custom-utility-group');
@@ -1394,7 +1401,6 @@
       listEl.innerHTML = expenses.slice().reverse().map((exp) => {
         return `
           <div class="expense-item-wrapper">
-            <div class="expense-item-swipe-bg">🗑️ Delete</div>
             <div class="expense-item" data-expense-id="${exp.id}" data-pane="${paneNum}">
               <div class="expense-info">
                 <div class="expense-desc">${exp.category}</div>
@@ -1402,11 +1408,11 @@
               </div>
               <div class="expense-amount">$${exp.amount.toFixed(2)}</div>
             </div>
+            <button class="delete-btn">🗑️ Delete</button>
           </div>
         `;
       }).join('');
       
-      // Add swipe and tap handlers
       listEl.querySelectorAll('.expense-item').forEach(item => {
         setupSwipeAndTap(item, 'expense');
       });
@@ -1428,7 +1434,6 @@
       listEl.innerHTML = utilityList.map(util => {
         return `
           <div class="expense-item-wrapper">
-            <div class="expense-item-swipe-bg">🗑️ Delete</div>
             <div class="expense-item" data-utility-id="${util.id}">
               <div class="expense-info">
                 <div class="expense-desc">${util.type}</div>
@@ -1436,11 +1441,11 @@
               </div>
               <div class="expense-amount">$${util.amount.toFixed(2)}</div>
             </div>
+            <button class="delete-btn">🗑️ Delete</button>
           </div>
         `;
       }).join('');
       
-      // Add swipe and tap handlers
       listEl.querySelectorAll('.expense-item').forEach(item => {
         setupSwipeAndTap(item, 'utility');
       });
@@ -1452,6 +1457,7 @@
       let isSwiping = false;
       let swipeStartTime = 0;
       const swipeThreshold = 50;
+      const deleteBtn = item.nextElementSibling;
       
       const handleTouchStart = (e) => {
         startX = e.touches[0].clientX;
@@ -1468,7 +1474,7 @@
           isSwiping = true;
         }
         
-        if (diff > 0 && diff < 100) {
+        if (diff > 0 && diff < 80) {
           item.style.transform = `translateX(-${diff}px)`;
         }
       };
@@ -1479,43 +1485,14 @@
         const swipeDuration = Date.now() - swipeStartTime;
         
         if (isSwiping && diff > swipeThreshold) {
-          // Swiped left - reveal delete
           item.classList.add('swiped');
           item.style.transform = '';
-          
-          // Click on delete background to delete
-          const bg = item.closest('.expense-item-wrapper').querySelector('.expense-item-swipe-bg');
-          bg.onclick = () => {
-            const id = type === 'expense' ? 
-              parseInt(item.dataset.expenseId) : 
-              parseInt(item.dataset.utilityId);
-            
-            if (confirm('Delete this ' + type + '?')) {
-              if (type === 'expense') {
-                const index = transactions.findIndex(t => t.id === id);
-                if (index !== -1) {
-                  transactions.splice(index, 1);
-                  localStorage.setItem('transactions', JSON.stringify(transactions));
-                  updateDisplay();
-                }
-              } else {
-                const index = utilities.findIndex(u => u.id === id);
-                if (index !== -1) {
-                  utilities.splice(index, 1);
-                  localStorage.setItem('utilities', JSON.stringify(utilities));
-                  updateMonthlyDisplay();
-                }
-              }
-            }
-          };
         } else if (!isSwiping && swipeDuration < 300) {
-          // Quick tap - open edit modal
           const id = type === 'expense' ? 
             parseInt(item.dataset.expenseId) : 
             parseInt(item.dataset.utilityId);
           openEditModal(id, type);
         } else {
-          // Reset position
           item.classList.remove('swiped');
           item.style.transform = '';
         }
@@ -1525,18 +1502,40 @@
         isSwiping = false;
       };
       
-      // Touch events for mobile
       item.addEventListener('touchstart', handleTouchStart, { passive: true });
       item.addEventListener('touchmove', handleTouchMove, { passive: true });
       item.addEventListener('touchend', handleTouchEnd, { passive: true });
       
-      // Click event for desktop
       item.addEventListener('click', (e) => {
         if (!item.classList.contains('swiped')) {
           const id = type === 'expense' ? 
             parseInt(item.dataset.expenseId) : 
             parseInt(item.dataset.utilityId);
           openEditModal(id, type);
+        }
+      });
+      
+      deleteBtn.addEventListener('click', () => {
+        const id = type === 'expense' ? 
+          parseInt(item.dataset.expenseId) : 
+          parseInt(item.dataset.utilityId);
+        
+        if (confirm('Delete this ' + type + '?')) {
+          if (type === 'expense') {
+            const index = transactions.findIndex(t => t.id === id);
+            if (index !== -1) {
+              transactions.splice(index, 1);
+              localStorage.setItem('transactions', JSON.stringify(transactions));
+              updateDisplay();
+            }
+          } else {
+            const index = utilities.findIndex(u => u.id === id);
+            if (index !== -1) {
+              utilities.splice(index, 1);
+              localStorage.setItem('utilities', JSON.stringify(utilities));
+              updateMonthlyDisplay();
+            }
+          }
         }
       });
     }
