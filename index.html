@@ -629,7 +629,6 @@
       text-align: center;
     }
 
-    /* Modal styles */
     .modal {
       display: none;
       position: fixed;
@@ -1073,7 +1072,7 @@
         settings,
         paneStates: { pane1Offset, pane2Offset },
         exportDate: new Date().toISOString(),
-        version: '1.1'
+        version: '1.2'
       };
       
       const dataStr = JSON.stringify(data, null, 2);
@@ -1268,19 +1267,39 @@
         return;
       }
       
-      listEl.innerHTML = expenses.slice().reverse().map((exp, displayIndex) => {
-        const actualIndex = transactions.findIndex(t => t.id === exp.id);
+      listEl.innerHTML = expenses.slice().reverse().map((exp) => {
         return `
-          <div class="expense-item" data-expense-id="${exp.id}" data-actual-index="${actualIndex}">
+          <div class="expense-item" data-expense-id="${exp.id}" data-pane="${paneNum}">
             <div class="expense-info">
               <div class="expense-desc">${exp.category}</div>
               <div class="expense-cat">${new Date(exp.date).toLocaleDateString()}</div>
             </div>
             <div class="expense-amount">$${exp.amount.toFixed(2)}</div>
-            <button class="delete-btn" onclick="deleteExpenseById('${exp.id}', 1)">✕</button>
+            <button class="delete-btn" type="button">✕</button>
           </div>
         `;
       }).join('');
+      
+      // EVENT DELEGATION - Delete button listener
+      listEl.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const expenseItem = this.closest('.expense-item');
+          const expenseId = parseInt(expenseItem.dataset.expenseId);
+          
+          if (confirm('Delete this expense?')) {
+            const index = transactions.findIndex(t => t.id === expenseId);
+            
+            if (index !== -1) {
+              transactions.splice(index, 1);
+              localStorage.setItem('transactions', JSON.stringify(transactions));
+              updateDisplay();
+            }
+          }
+        });
+      });
     }
 
     function renderUtilities(utilityList) {
@@ -1297,18 +1316,38 @@
       }
       
       listEl.innerHTML = utilityList.map(util => {
-        const actualIndex = utilities.findIndex(u => u.id === util.id);
         return `
-          <div class="expense-item" data-utility-id="${util.id}" data-actual-index="${actualIndex}">
+          <div class="expense-item" data-utility-id="${util.id}">
             <div class="expense-info">
               <div class="expense-desc">${util.type}</div>
               <div class="expense-cat">${util.month}</div>
             </div>
             <div class="expense-amount">$${util.amount.toFixed(2)}</div>
-            <button class="delete-btn" onclick="deleteUtilityById('${util.id}')">✕</button>
+            <button class="delete-btn" type="button">✕</button>
           </div>
         `;
       }).join('');
+      
+      // EVENT DELEGATION - Delete button listener
+      listEl.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const utilityItem = this.closest('.expense-item');
+          const utilityId = parseInt(utilityItem.dataset.utilityId);
+          
+          if (confirm('Delete this utility bill?')) {
+            const index = utilities.findIndex(u => u.id === utilityId);
+            
+            if (index !== -1) {
+              utilities.splice(index, 1);
+              localStorage.setItem('utilities', JSON.stringify(utilities));
+              updateMonthlyDisplay();
+            }
+          }
+        });
+      });
     }
 
     function addExpense(paneNum) {
@@ -1381,34 +1420,6 @@
       document.getElementById('custom-utility-group').style.display = 'none';
       
       updateMonthlyDisplay();
-    }
-
-    function deleteExpenseById(expenseId, paneNum) {
-      const index = transactions.findIndex(t => t.id === expenseId);
-      if (index === -1) {
-        console.error('Expense not found:', expenseId);
-        return;
-      }
-      
-      if (confirm('Delete this expense?')) {
-        transactions.splice(index, 1);
-        localStorage.setItem('transactions', JSON.stringify(transactions));
-        updateDisplay();
-      }
-    }
-
-    function deleteUtilityById(utilityId) {
-      const index = utilities.findIndex(u => u.id === utilityId);
-      if (index === -1) {
-        console.error('Utility not found:', utilityId);
-        return;
-      }
-      
-      if (confirm('Delete this utility bill?')) {
-        utilities.splice(index, 1);
-        localStorage.setItem('utilities', JSON.stringify(utilities));
-        updateMonthlyDisplay();
-      }
     }
 
     document.getElementById('salary-input-1').addEventListener('change', function() {
