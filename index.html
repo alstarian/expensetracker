@@ -231,12 +231,43 @@
       z-index: 1;
     }
 
-    .pane-title {
-      font-size: 1.4rem;
-      font-weight: 700;
+    .period-nav {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex: 1;
+    }
+
+    .period-nav button {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .period-nav button:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(1.1);
+    }
+
+    .period-nav button:active {
+      transform: scale(0.95);
+    }
+
+    .period-title {
+      font-size: 1.1rem;
+      font-weight: 600;
       color: #fff;
-      letter-spacing: -0.8px;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      flex: 1;
     }
 
     .star-toggle {
@@ -863,16 +894,15 @@
       <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
     </div>
 
-    <!-- Left Pane: Bi-Weekly 1 -->
+    <!-- Left Pane: Pay Period 1 -->
     <div class="pane" id="pane-1">
       <div class="pane-header">
-        <div class="pane-title">Bi-Weekly 1</div>
+        <div class="period-nav">
+          <button onclick="changePeriod(1, -1)" title="Previous period">◀</button>
+          <div class="period-title" id="period-1-dates">Loading...</div>
+          <button onclick="changePeriod(1, 1)" title="Next period">▶</button>
+        </div>
         <div class="star-toggle" id="star-1" onclick="togglePeriod(1)">⭐</div>
-      </div>
-
-      <div class="period-dates">
-        <div class="period-dates-label">Period Dates</div>
-        <div class="period-dates-value" id="period-1-dates">Loading...</div>
       </div>
 
       <div class="summary">
@@ -915,16 +945,15 @@
       </div>
     </div>
 
-    <!-- Right Pane: Bi-Weekly 2 -->
+    <!-- Right Pane: Pay Period 2 -->
     <div class="pane" id="pane-2">
       <div class="pane-header">
-        <div class="pane-title">Bi-Weekly 2</div>
+        <div class="period-nav">
+          <button onclick="changePeriod(2, -1)" title="Previous period">◀</button>
+          <div class="period-title" id="period-2-dates">Loading...</div>
+          <button onclick="changePeriod(2, 1)" title="Next period">▶</button>
+        </div>
         <div class="star-toggle" id="star-2" onclick="togglePeriod(2)">⭐</div>
-      </div>
-
-      <div class="period-dates">
-        <div class="period-dates-label">Period Dates</div>
-        <div class="period-dates-value" id="period-2-dates">Loading...</div>
       </div>
 
       <div class="summary">
@@ -970,7 +999,7 @@
     <!-- Third Pane: Monthly Utilities -->
     <div class="pane monthly" id="pane-monthly">
       <div class="pane-header">
-        <div class="pane-title">Monthly Utilities</div>
+        <div class="pane-title" style="font-size: 1.4rem; font-weight: 700;">Monthly Utilities</div>
       </div>
 
       <div class="month-nav">
@@ -1065,9 +1094,8 @@
       startDate: '2025-12-24'
     };
 
-    // Initialize with current period always in pane 1
-    let pane1Offset = 0;  // Always current period
-    let pane2Offset = 1;  // Always next period
+    let pane1Offset = 0;
+    let pane2Offset = 1;
     let currentMonthOffset = 0;
     
     let editingItem = null;
@@ -1242,7 +1270,7 @@
         settings,
         paneStates: { pane1Offset, pane2Offset },
         exportDate: new Date().toISOString(),
-        version: '1.4'
+        version: '1.5'
       };
       
       const dataStr = JSON.stringify(data, null, 2);
@@ -1273,7 +1301,6 @@
             utilities = imported.utilities || [];
             settings = imported.settings || { startDate: '2025-12-24' };
             
-            // Reset to current period view
             pane1Offset = 0;
             pane2Offset = 1;
             
@@ -1297,14 +1324,22 @@
       event.target.value = '';
     }
 
-    // Updated toggle to swap which pane shows current period
+    // Navigate periods with arrows
+    function changePeriod(paneNum, direction) {
+      if (paneNum === 1) {
+        pane1Offset += direction;
+      } else {
+        pane2Offset += direction;
+      }
+      savePaneStates();
+      updateDisplay();
+    }
+
     function togglePeriod(paneNum) {
       if (paneNum === 1) {
-        // Make pane 1 current
         pane1Offset = 0;
         pane2Offset = 1;
       } else {
-        // Make pane 2 current
         pane2Offset = 0;
         pane1Offset = 1;
       }
@@ -1352,6 +1387,10 @@
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
 
+    function formatDateShort(date) {
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    }
+
     function changeMonth(direction) {
       currentMonthOffset += direction;
       updateMonthlyDisplay();
@@ -1365,7 +1404,6 @@
       
       if (today > currentPeriod.end) {
         console.log('Period ended - periods will auto-update on next load');
-        // Periods automatically adjust based on current date calculation
       }
     }
 
@@ -1379,11 +1417,13 @@
       const pane = document.getElementById(`pane-${paneNum}`);
       const star = document.getElementById(`star-${paneNum}`);
       
+      // Show date range with optional "CURRENT" label
+      const dateRange = `${formatDateShort(period.start)} - ${formatDateShort(period.end)}`;
+      const isCurrent = offset === 0;
       document.getElementById(`period-${paneNum}-dates`).textContent = 
-        `${formatDate(period.start)} - ${formatDate(period.end)}`;
+        isCurrent ? `${dateRange} (CURRENT)` : dateRange;
       
-      // Auto-star the current period (offset === 0)
-      if (offset === 0) {
+      if (isCurrent) {
         star.classList.add('active');
         pane.classList.add('current');
       } else {
@@ -1563,7 +1603,6 @@
       item.addEventListener('touchmove', handleTouchMove, { passive: true });
       item.addEventListener('touchend', handleTouchEnd, { passive: true });
       
-      // ONLY Edit button can trigger edit modal - no tap-to-edit on the item itself
       editBtn.addEventListener('click', (e) => {
         e.stopPropagation();
         const id = type === 'expense' ? 
@@ -1598,7 +1637,6 @@
         }
       });
       
-      // Click anywhere else to close swipe
       document.addEventListener('click', (e) => {
         if (!wrapper.contains(e.target)) {
           item.classList.remove('swiped');
