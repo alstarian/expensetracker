@@ -206,7 +206,7 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 36px;
+      margin-bottom: 24px;
       padding-bottom: 24px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       position: relative;
@@ -274,6 +274,31 @@
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.12));
       color: #fff;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .period-dates {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 12px 18px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .period-dates-label {
+      font-size: 0.7rem;
+      color: rgba(255, 255, 255, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 4px;
+    }
+
+    .period-dates-value {
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.9);
+      font-weight: 600;
     }
 
     .summary {
@@ -627,6 +652,11 @@
         </div>
       </div>
 
+      <div class="period-dates">
+        <div class="period-dates-label">Period Dates</div>
+        <div class="period-dates-value" id="period-1-dates">Loading...</div>
+      </div>
+
       <div class="summary">
         <div class="summary-item">
           <div class="summary-label">Salary</div>
@@ -678,6 +708,11 @@
           <button onclick="changePeriod(0, 2)" id="btn-2-0">Current</button>
           <button onclick="changePeriod(1, 2)" id="btn-2-1">Next</button>
         </div>
+      </div>
+
+      <div class="period-dates">
+        <div class="period-dates-label">Period Dates</div>
+        <div class="period-dates-value" id="period-2-dates">Loading...</div>
       </div>
 
       <div class="summary">
@@ -860,6 +895,10 @@
       const period = getPeriod(offset);
       const pane = document.getElementById(`pane-${paneNum}`);
       const currentIndicator = document.getElementById(`current-${paneNum}`);
+      
+      // Update period dates display
+      document.getElementById(`period-${paneNum}-dates`).textContent = 
+        `${formatDate(period.start)} - ${formatDate(period.end)}`;
       
       if (offset === 0) {
         currentIndicator.style.display = 'inline';
