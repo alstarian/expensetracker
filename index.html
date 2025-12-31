@@ -303,38 +303,6 @@
       font-weight: 600;
     }
 
-    .quick-add-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-
-    .quick-add-btn {
-      background: rgba(99, 102, 241, 0.15);
-      border: 1px solid rgba(99, 102, 241, 0.3);
-      color: white;
-      padding: 16px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 500;
-      transition: all 0.2s;
-      text-align: center;
-    }
-
-    .quick-add-btn:hover {
-      background: rgba(99, 102, 241, 0.3);
-      transform: scale(1.05);
-    }
-
-    .quick-add-btn .amount {
-      display: block;
-      font-size: 1.1rem;
-      font-weight: 700;
-      margin-top: 4px;
-    }
-
     .form-grid {
       display: grid;
       grid-template-columns: 2fr 1fr;
@@ -716,10 +684,6 @@
         grid-template-columns: 1fr;
       }
 
-      .quick-add-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-
       header h1 {
         font-size: 2rem;
       }
@@ -787,10 +751,11 @@
     </div>
   </div>
 
-  <!-- Budget Modal -->
+  <!-- Budget Modal - Now Period Specific -->
   <div class="modal" id="budget-modal">
     <div class="modal-content">
-      <h2>Manage Budget Categories</h2>
+      <h2 id="budget-modal-title">Manage Budget for This Period</h2>
+      <div class="helper-text" style="margin-bottom: 20px;" id="budget-period-info">Setting budget for current period</div>
       
       <div id="budget-categories-list"></div>
       
@@ -855,7 +820,7 @@
 
     <div class="input-section glass">
       <div class="export-controls">
-        <button onclick="openBudget()" class="btn budget-btn">📋 Budget</button>
+        <button onclick="openBudget()" class="btn budget-btn">📋 Edit Budget</button>
         <button onclick="exportData()" class="btn export-btn">📥 Export</button>
         <button onclick="document.getElementById('import-file').click()" class="btn import-btn">📤 Import</button>
         <button onclick="clearAllExpenses()" class="btn btn-danger">🗑️ Clear All</button>
@@ -864,12 +829,7 @@
     </div>
 
     <div class="input-section glass">
-      <h2>Quick Add Common Expenses</h2>
-      <div class="quick-add-grid" id="quick-add-grid"></div>
-    </div>
-
-    <div class="input-section glass">
-      <h2>Add Custom Expense</h2>
+      <h2>Add Expense</h2>
       <form id="transaction-form">
         <div class="form-grid">
           <select id="category" required>
@@ -903,18 +863,8 @@
       frequency: 'biweekly',
       startDate: '2026-01-07'
     };
-    let budgetCategories = JSON.parse(localStorage.getItem('budgetCategories')) || [
-      { name: 'Rent', budget: 1210 },
-      { name: 'Home', budget: 275 },
-      { name: 'Home Extra', budget: 100 },
-      { name: 'India', budget: 305 },
-      { name: 'Saving', budget: 190 },
-      { name: 'Car', budget: 252 },
-      { name: 'Insurance', budget: 0 },
-      { name: 'Mobile', budget: 90 },
-      { name: 'Internet', budget: 75 },
-      { name: 'Fuel', budget: 40 }
-    ];
+    // NEW: budgets is now an object with keys being period keys
+    let budgets = JSON.parse(localStorage.getItem('budgets')) || {};
     let currentPeriodOffset = 0;
     let lastDeletedExpense = null;
     let searchFilter = '';
@@ -939,6 +889,9 @@
     }
 
     function openBudget() {
+      const period = getPeriod(currentPeriodOffset);
+      document.getElementById('budget-modal-title').textContent = `Budget for ${formatDate(period.start)} - ${formatDate(period.end)}`;
+      document.getElementById('budget-period-info').textContent = `Setting budget for ${formatDate(period.start)} - ${formatDate(period.end)}`;
       renderBudgetForm();
       document.getElementById('budget-modal').classList.add('active');
     }
@@ -947,7 +900,28 @@
       document.getElementById('budget-modal').classList.remove('active');
     }
 
+    function getCurrentPeriodBudget() {
+      const period = getPeriod(currentPeriodOffset);
+      if (!budgets[period.key]) {
+        // Initialize with default categories if this period has no budget yet
+        budgets[period.key] = [
+          { name: 'Rent', budget: 0 },
+          { name: 'Home', budget: 0 },
+          { name: 'Home Extra', budget: 0 },
+          { name: 'India', budget: 0 },
+          { name: 'Saving', budget: 0 },
+          { name: 'Car', budget: 0 },
+          { name: 'Insurance', budget: 0 },
+          { name: 'Mobile', budget: 0 },
+          { name: 'Internet', budget: 0 },
+          { name: 'Fuel', budget: 0 }
+        ];
+      }
+      return budgets[period.key];
+    }
+
     function renderBudgetForm() {
+      const budgetCategories = getCurrentPeriodBudget();
       const container = document.getElementById('budget-categories-list');
       container.innerHTML = budgetCategories.map((cat, index) => `
         <div class="budget-item">
@@ -959,12 +933,17 @@
     }
 
     function addBudgetCategory() {
-      budgetCategories.push({ name: '', budget: 0 });
+      const period = getPeriod(currentPeriodOffset);
+      if (!budgets[period.key]) {
+        budgets[period.key] = [];
+      }
+      budgets[period.key].push({ name: '', budget: 0 });
       renderBudgetForm();
     }
 
     function removeBudgetCategory(index) {
-      budgetCategories.splice(index, 1);
+      const period = getPeriod(currentPeriodOffset);
+      budgets[period.key].splice(index, 1);
       renderBudgetForm();
     }
 
@@ -972,73 +951,57 @@
       const currentPeriod = getPeriod(currentPeriodOffset);
       const previousPeriod = getPeriod(currentPeriodOffset - 1);
       
-      const prevExpenses = transactions.filter(t => {
-        const tDate = new Date(t.date);
-        tDate.setHours(0, 0, 0, 0);
-        return tDate >= previousPeriod.start && tDate <= previousPeriod.end;
-      });
-      
-      const categoryTotals = {};
-      prevExpenses.forEach(t => {
-        categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
-      });
-      
-      budgetCategories.forEach((cat, index) => {
-        if (categoryTotals[cat.name]) {
-          document.getElementById(`cat-budget-${index}`).value = Math.ceil(categoryTotals[cat.name]);
+      // Option 1: Copy previous period's budget
+      if (budgets[previousPeriod.key]) {
+        if (confirm('Copy previous period\'s budget amounts to this period?')) {
+          budgets[currentPeriod.key] = JSON.parse(JSON.stringify(budgets[previousPeriod.key]));
+          renderBudgetForm();
+          alert('Previous period budget copied!');
         }
-      });
-      
-      alert('Previous period spending copied to budget fields!');
+      } else {
+        // Option 2: Copy previous period's actual spending
+        const prevExpenses = transactions.filter(t => {
+          const tDate = new Date(t.date);
+          tDate.setHours(0, 0, 0, 0);
+          return tDate >= previousPeriod.start && tDate <= previousPeriod.end;
+        });
+        
+        const categoryTotals = {};
+        prevExpenses.forEach(t => {
+          categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
+        });
+        
+        const budgetCategories = getCurrentPeriodBudget();
+        budgetCategories.forEach((cat, index) => {
+          if (categoryTotals[cat.name]) {
+            document.getElementById(`cat-budget-${index}`).value = Math.ceil(categoryTotals[cat.name]);
+          }
+        });
+        
+        alert('Previous period spending copied to budget fields!');
+      }
     }
 
     function saveBudget() {
-      budgetCategories = budgetCategories.map((cat, index) => ({
+      const period = getPeriod(currentPeriodOffset);
+      const budgetCategories = getCurrentPeriodBudget();
+      
+      budgets[period.key] = budgetCategories.map((cat, index) => ({
         name: document.getElementById(`cat-name-${index}`).value || `Category ${index + 1}`,
         budget: parseFloat(document.getElementById(`cat-budget-${index}`).value) || 0
       })).filter(cat => cat.name.trim() !== '');
       
-      localStorage.setItem('budgetCategories', JSON.stringify(budgetCategories));
+      localStorage.setItem('budgets', JSON.stringify(budgets));
       updateCategoryDropdown();
-      updateQuickAddButtons();
       updateDisplay();
       closeBudget();
     }
 
     function updateCategoryDropdown() {
+      const budgetCategories = getCurrentPeriodBudget();
       const select = document.getElementById('category');
       select.innerHTML = '<option value="">Select Category</option>' + 
         budgetCategories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('');
-    }
-
-    function updateQuickAddButtons() {
-      const grid = document.getElementById('quick-add-grid');
-      const topCategories = budgetCategories.filter(cat => cat.budget > 0).slice(0, 6);
-      
-      grid.innerHTML = topCategories.map(cat => `
-        <button class="quick-add-btn" onclick="quickAddExpense('${cat.name}', ${cat.budget})">
-          <div>${cat.name}</div>
-          <div class="amount">$${cat.budget}</div>
-        </button>
-      `).join('');
-    }
-
-    function quickAddExpense(category, suggestedAmount) {
-      const amount = prompt(`Add expense for ${category}:`, suggestedAmount);
-      if (amount && !isNaN(amount)) {
-        const transaction = {
-          id: Date.now(),
-          category,
-          amount: parseFloat(amount),
-          description: `Quick add: ${category}`,
-          date: new Date().toISOString()
-        };
-        transactions.push(transaction);
-        localStorage.setItem('transactions', JSON.stringify(transactions));
-        lastDeletedExpense = transaction;
-        showUndoButton();
-        updateDisplay();
-      }
     }
 
     function getPeriod(offset = 0) {
@@ -1092,6 +1055,7 @@
 
     function updateDisplay() {
       const period = getPeriod(currentPeriodOffset);
+      const budgetCategories = getCurrentPeriodBudget();
       
       document.getElementById('period-dates').textContent = 
         `${formatDate(period.start)} - ${formatDate(period.end)}`;
@@ -1113,6 +1077,7 @@
       document.getElementById('total-actual').textContent = `$${totalActual.toFixed(2)}`;
       document.getElementById('savings').textContent = `$${savings.toFixed(2)}`;
       
+      updateCategoryDropdown();
       renderBudgetTable(period, periodExpenses, salary);
       renderTrendChart();
     }
@@ -1130,6 +1095,7 @@
     }
 
     function renderBudgetTable(period, periodExpenses, salary) {
+      const budgetCategories = getCurrentPeriodBudget();
       const categoryTotals = {};
       
       periodExpenses.forEach(t => {
@@ -1380,7 +1346,7 @@
         transactions,
         salaries,
         settings,
-        budgetCategories,
+        budgets,
         exportDate: new Date().toISOString()
       };
       const dataStr = JSON.stringify(data, null, 2);
@@ -1405,14 +1371,12 @@
             transactions = imported.transactions || [];
             salaries = imported.salaries || {};
             settings = imported.settings || settings;
-            budgetCategories = imported.budgetCategories || budgetCategories;
+            budgets = imported.budgets || {};
             localStorage.setItem('transactions', JSON.stringify(transactions));
             localStorage.setItem('salaries', JSON.stringify(salaries));
             localStorage.setItem('paySettings', JSON.stringify(settings));
-            localStorage.setItem('budgetCategories', JSON.stringify(budgetCategories));
+            localStorage.setItem('budgets', JSON.stringify(budgets));
             currentPeriodOffset = 0;
-            updateCategoryDropdown();
-            updateQuickAddButtons();
             updateDisplay();
             alert('Data imported successfully!');
           }
@@ -1426,8 +1390,6 @@
     document.getElementById('transaction-form').addEventListener('submit', addTransaction);
 
     // Initialize
-    updateCategoryDropdown();
-    updateQuickAddButtons();
     updateDisplay();
   </script>
 </body>
