@@ -808,7 +808,7 @@
     let salaries = JSON.parse(localStorage.getItem('salaries')) || {};
     let utilities = JSON.parse(localStorage.getItem('utilities')) || [];
     let settings = JSON.parse(localStorage.getItem('paySettings')) || {
-      startDate: '2025-12-24'  // FIXED: Changed from future date to actual current period
+      startDate: '2025-12-24'
     };
 
     let paneStates = JSON.parse(localStorage.getItem('paneStates')) || {
@@ -1039,8 +1039,8 @@
         return;
       }
       
-      listEl.innerHTML = expenses.reverse().map(exp => {
-        const actualIndex = transactions.indexOf(exp);
+      listEl.innerHTML = expenses.slice().reverse().map(exp => {
+        const actualIndex = transactions.findIndex(t => t.id === exp.id);
         return `
           <div class="expense-item">
             <div class="expense-info">
@@ -1068,7 +1068,7 @@
       }
       
       listEl.innerHTML = utilityList.map(util => {
-        const actualIndex = utilities.indexOf(util);
+        const actualIndex = utilities.findIndex(u => u.id === util.id);
         return `
           <div class="expense-item">
             <div class="expense-info">
@@ -1155,16 +1155,30 @@
     }
 
     function deleteExpense(index) {
+      if (index < 0 || index >= transactions.length) {
+        console.error('Invalid index:', index);
+        alert('Error deleting expense. Please refresh the page.');
+        return;
+      }
+      
       if (confirm('Delete this expense?')) {
-        transactions.splice(index, 1);
+        const deleted = transactions.splice(index, 1);
+        console.log('Deleted expense:', deleted);
         localStorage.setItem('transactions', JSON.stringify(transactions));
         updateDisplay();
       }
     }
 
     function deleteUtility(index) {
+      if (index < 0 || index >= utilities.length) {
+        console.error('Invalid index:', index);
+        alert('Error deleting utility. Please refresh the page.');
+        return;
+      }
+      
       if (confirm('Delete this utility bill?')) {
-        utilities.splice(index, 1);
+        const deleted = utilities.splice(index, 1);
+        console.log('Deleted utility:', deleted);
         localStorage.setItem('utilities', JSON.stringify(utilities));
         updateMonthlyDisplay();
       }
