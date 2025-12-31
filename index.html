@@ -13,20 +13,11 @@
       box-sizing: border-box;
     }
 
-    :root {
-      --primary: #6366f1;
-      --primary-dark: #4f46e5;
-      --success: #10b981;
-      --danger: #ef4444;
-      --text: #ffffff;
-      --text-secondary: rgba(255, 255, 255, 0.7);
-    }
-
     body {
       font-family: 'Inter', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
       background-attachment: fixed;
-      color: var(--text);
+      color: #ffffff;
       min-height: 100vh;
       padding: 20px;
     }
@@ -46,20 +37,87 @@
       font-weight: 700;
       color: white;
       margin-bottom: 8px;
-      text-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+      text-shadow: 0 2px 20px rgba(0, 0, 0, 0.3);
     }
 
     header p {
-      color: rgba(255, 255, 255, 0.8);
+      color: rgba(255, 255, 255, 0.7);
       font-size: 0.95rem;
     }
 
     .glass {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.05);
       backdrop-filter: blur(20px) saturate(180%);
       -webkit-backdrop-filter: blur(20px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .settings-btn {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      z-index: 100;
+    }
+
+    .settings-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: rgba(26, 26, 46, 0.95);
+      backdrop-filter: blur(30px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 24px;
+      padding: 40px;
+      max-width: 500px;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content h2 {
+      font-size: 1.8rem;
+      margin-bottom: 24px;
+      color: white;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.8);
+      font-weight: 500;
     }
 
     .period-selector {
@@ -79,7 +137,7 @@
 
     .period-label {
       font-size: 0.85rem;
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(255, 255, 255, 0.6);
       margin-bottom: 4px;
       text-transform: uppercase;
       letter-spacing: 1px;
@@ -97,9 +155,9 @@
     }
 
     .period-btn {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       color: white;
       padding: 10px 18px;
       border-radius: 12px;
@@ -110,9 +168,9 @@
     }
 
     .period-btn:hover {
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.15);
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     }
 
     .summary-cards {
@@ -130,12 +188,13 @@
 
     .card:hover {
       transform: translateY(-8px);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+      background: rgba(255, 255, 255, 0.08);
     }
 
     .card-label {
       font-size: 0.85rem;
-      color: rgba(255, 255, 255, 0.8);
+      color: rgba(255, 255, 255, 0.7);
       text-transform: uppercase;
       letter-spacing: 0.8px;
       margin-bottom: 12px;
@@ -148,12 +207,12 @@
       font-size: 2.2rem;
       font-weight: 700;
       color: white;
-      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     }
 
     .edit-salary-btn {
-      background: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
       color: white;
       padding: 4px 12px;
       border-radius: 8px;
@@ -165,7 +224,7 @@
     }
 
     .edit-salary-btn:hover {
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.2);
       transform: scale(1.05);
     }
 
@@ -190,9 +249,9 @@
     }
 
     input, select {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 12px;
       padding: 14px 16px;
       color: white;
@@ -202,25 +261,25 @@
     }
 
     input::placeholder {
-      color: rgba(255, 255, 255, 0.5);
+      color: rgba(255, 255, 255, 0.4);
     }
 
     input:focus, select:focus {
       outline: none;
-      background: rgba(255, 255, 255, 0.2);
-      border-color: rgba(255, 255, 255, 0.4);
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.3);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
     }
 
     select option {
-      background: #667eea;
+      background: #1a1a2e;
       color: white;
     }
 
     .btn {
-      background: rgba(255, 255, 255, 0.2);
+      background: rgba(99, 102, 241, 0.3);
       backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.3);
+      border: 1px solid rgba(99, 102, 241, 0.4);
       color: white;
       border-radius: 12px;
       padding: 14px 24px;
@@ -232,13 +291,23 @@
     }
 
     .btn:hover {
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba(99, 102, 241, 0.4);
       transform: translateY(-2px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.3);
     }
 
     .btn:active {
       transform: translateY(0);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
     }
 
     .export-controls {
@@ -249,20 +318,24 @@
 
     .export-btn {
       flex: 1;
-      background: rgba(16, 185, 129, 0.3);
+      background: rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.3);
     }
 
     .export-btn:hover {
-      background: rgba(16, 185, 129, 0.4);
+      background: rgba(16, 185, 129, 0.3);
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.2);
     }
 
     .import-btn {
       flex: 1;
-      background: rgba(245, 158, 11, 0.3);
+      background: rgba(245, 158, 11, 0.2);
+      border-color: rgba(245, 158, 11, 0.3);
     }
 
     .import-btn:hover {
-      background: rgba(245, 158, 11, 0.4);
+      background: rgba(245, 158, 11, 0.3);
+      box-shadow: 0 8px 24px rgba(245, 158, 11, 0.2);
     }
 
     .transactions-section h2 {
@@ -296,7 +369,8 @@
 
     .transaction-item:hover {
       transform: translateX(8px);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+      background: rgba(255, 255, 255, 0.08);
     }
 
     .transaction-info {
@@ -312,7 +386,7 @@
 
     .transaction-category {
       font-size: 0.85rem;
-      color: rgba(255, 255, 255, 0.6);
+      color: rgba(255, 255, 255, 0.5);
     }
 
     .transaction-amount {
@@ -323,7 +397,7 @@
     }
 
     .delete-btn {
-      background: rgba(239, 68, 68, 0.2);
+      background: rgba(239, 68, 68, 0.15);
       color: white;
       border: 1px solid rgba(239, 68, 68, 0.3);
       border-radius: 10px;
@@ -335,21 +409,21 @@
     }
 
     .delete-btn:hover {
-      background: rgba(239, 68, 68, 0.4);
+      background: rgba(239, 68, 68, 0.3);
       transform: scale(1.05);
     }
 
     .empty-state {
       text-align: center;
       padding: 60px 20px;
-      color: rgba(255, 255, 255, 0.7);
+      color: rgba(255, 255, 255, 0.6);
     }
 
     .empty-state span {
       font-size: 4rem;
       display: block;
       margin-bottom: 16px;
-      opacity: 0.8;
+      opacity: 0.7;
     }
 
     @media (max-width: 640px) {
@@ -373,19 +447,51 @@
       .export-controls {
         flex-direction: column;
       }
+
+      .settings-btn {
+        top: 10px;
+        right: 10px;
+        padding: 10px 16px;
+      }
     }
   </style>
 </head>
 <body>
+  <button class="settings-btn" onclick="openSettings()">⚙️ Settings</button>
+
+  <div class="modal" id="settings-modal">
+    <div class="modal-content">
+      <h2>Pay Period Settings</h2>
+      
+      <div class="form-group">
+        <label>Pay Frequency</label>
+        <select id="pay-frequency" onchange="updateFrequencySettings()">
+          <option value="biweekly">Bi-Weekly (Every 2 weeks)</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+
+      <div class="form-group" id="start-date-group">
+        <label id="start-date-label">Next Pay Date</label>
+        <input type="date" id="pay-start-date">
+      </div>
+
+      <div style="display: flex; gap: 12px; margin-top: 32px;">
+        <button class="btn" onclick="saveSettings()">Save Settings</button>
+        <button class="btn btn-secondary" onclick="closeSettings()">Cancel</button>
+      </div>
+    </div>
+  </div>
+
   <div class="container">
     <header>
       <h1>💰 Expense Tracker</h1>
-      <p>Track your bi-weekly salary and savings</p>
+      <p>Track your salary and savings</p>
     </header>
 
     <div class="glass period-selector">
       <div class="period-info">
-        <div class="period-label">Current Pay Period</div>
+        <div class="period-label" id="period-type-label">Current Pay Period</div>
         <div class="period-dates" id="period-dates">Loading...</div>
       </div>
       <div class="period-controls">
@@ -398,7 +504,7 @@
     <div class="summary-cards">
       <div class="card glass">
         <div class="card-label">
-          Bi-Weekly Salary
+          <span id="salary-label">Salary</span>
           <button class="edit-salary-btn" onclick="editSalary()">Edit</button>
         </div>
         <div class="card-amount" id="salary">$0.00</div>
@@ -455,28 +561,86 @@
   <script>
     let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
     let salaries = JSON.parse(localStorage.getItem('salaries')) || {};
+    let settings = JSON.parse(localStorage.getItem('paySettings')) || {
+      frequency: 'biweekly',
+      startDate: '2025-01-07'
+    };
     let currentPeriodOffset = 0;
 
-    // Set custom pay period start date (January 7, 2025)
-    const payPeriodStart = new Date('2025-01-07');
+    function openSettings() {
+      document.getElementById('pay-frequency').value = settings.frequency;
+      document.getElementById('pay-start-date').value = settings.startDate;
+      updateFrequencySettings();
+      document.getElementById('settings-modal').classList.add('active');
+    }
 
-    function getBiWeeklyPeriod(offset = 0) {
+    function closeSettings() {
+      document.getElementById('settings-modal').classList.remove('active');
+    }
+
+    function updateFrequencySettings() {
+      const frequency = document.getElementById('pay-frequency').value;
+      const label = document.getElementById('start-date-label');
+      
+      if (frequency === 'biweekly') {
+        label.textContent = 'Next Pay Date (Start of Period)';
+      } else {
+        label.textContent = 'Pay Day of Month (e.g., 1st, 15th)';
+      }
+    }
+
+    function saveSettings() {
+      settings.frequency = document.getElementById('pay-frequency').value;
+      settings.startDate = document.getElementById('pay-start-date').value;
+      
+      localStorage.setItem('paySettings', JSON.stringify(settings));
+      closeSettings();
+      currentPeriodOffset = 0;
+      updateDisplay();
+    }
+
+    function getPeriod(offset = 0) {
       const today = new Date();
-      const daysSinceStart = Math.floor((today - payPeriodStart) / (1000 * 60 * 60 * 24));
-      const currentPeriodNum = Math.floor(daysSinceStart / 14);
       
-      const targetPeriod = currentPeriodNum + offset;
-      const periodStart = new Date(payPeriodStart);
-      periodStart.setDate(periodStart.getDate() + (targetPeriod * 14));
-      
-      const periodEnd = new Date(periodStart);
-      periodEnd.setDate(periodEnd.getDate() + 13);
-      
-      return {
-        start: periodStart,
-        end: periodEnd,
-        key: `${periodStart.getFullYear()}-${String(periodStart.getMonth() + 1).padStart(2, '0')}-${String(periodStart.getDate()).padStart(2, '0')}`
-      };
+      if (settings.frequency === 'biweekly') {
+        const startDate = new Date(settings.startDate);
+        const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+        const currentPeriodNum = Math.floor(daysSinceStart / 14);
+        
+        const targetPeriod = currentPeriodNum + offset;
+        const periodStart = new Date(startDate);
+        periodStart.setDate(periodStart.getDate() + (targetPeriod * 14));
+        
+        const periodEnd = new Date(periodStart);
+        periodEnd.setDate(periodEnd.getDate() + 13);
+        
+        return {
+          start: periodStart,
+          end: periodEnd,
+          key: `${periodStart.getFullYear()}-${String(periodStart.getMonth() + 1).padStart(2, '0')}-${String(periodStart.getDate()).padStart(2, '0')}`
+        };
+      } else {
+        // Monthly
+        const payDay = parseInt(settings.startDate);
+        let periodStart, periodEnd;
+        
+        if (today.getDate() >= payDay) {
+          periodStart = new Date(today.getFullYear(), today.getMonth(), payDay);
+          periodEnd = new Date(today.getFullYear(), today.getMonth() + 1, payDay - 1);
+        } else {
+          periodStart = new Date(today.getFullYear(), today.getMonth() - 1, payDay);
+          periodEnd = new Date(today.getFullYear(), today.getMonth(), payDay - 1);
+        }
+        
+        periodStart.setMonth(periodStart.getMonth() + offset);
+        periodEnd.setMonth(periodEnd.getMonth() + offset);
+        
+        return {
+          start: periodStart,
+          end: periodEnd,
+          key: `${periodStart.getFullYear()}-${String(periodStart.getMonth() + 1).padStart(2, '0')}`
+        };
+      }
     }
 
     function formatDate(date) {
@@ -493,9 +657,10 @@
     }
 
     function editSalary() {
-      const period = getBiWeeklyPeriod(currentPeriodOffset);
+      const period = getPeriod(currentPeriodOffset);
       const current = salaries[period.key] || 0;
-      const newSalary = prompt(`Enter your bi-weekly salary for ${formatDate(period.start)} - ${formatDate(period.end)}:`, current);
+      const periodType = settings.frequency === 'biweekly' ? 'bi-weekly' : 'monthly';
+      const newSalary = prompt(`Enter your ${periodType} salary for ${formatDate(period.start)} - ${formatDate(period.end)}:`, current);
       
       if (newSalary !== null && !isNaN(newSalary)) {
         salaries[period.key] = parseFloat(newSalary);
@@ -505,7 +670,12 @@
     }
 
     function updateDisplay() {
-      const period = getBiWeeklyPeriod(currentPeriodOffset);
+      const period = getPeriod(currentPeriodOffset);
+      
+      // Update labels
+      const typeLabel = settings.frequency === 'biweekly' ? 'Bi-Weekly' : 'Monthly';
+      document.getElementById('period-type-label').textContent = `Current Pay Period (${typeLabel})`;
+      document.getElementById('salary-label').textContent = `${typeLabel} Salary`;
       
       document.getElementById('period-dates').textContent = 
         `${formatDate(period.start)} - ${formatDate(period.end)}`;
@@ -598,6 +768,7 @@
       const data = {
         transactions,
         salaries,
+        settings,
         exportDate: new Date().toISOString()
       };
       const dataStr = JSON.stringify(data, null, 2);
@@ -621,8 +792,10 @@
           if (confirm(`Import data? This will replace your current data.`)) {
             transactions = imported.transactions || [];
             salaries = imported.salaries || {};
+            settings = imported.settings || settings;
             localStorage.setItem('transactions', JSON.stringify(transactions));
             localStorage.setItem('salaries', JSON.stringify(salaries));
+            localStorage.setItem('paySettings', JSON.stringify(settings));
             updateDisplay();
             alert('Data imported successfully!');
           }
@@ -638,16 +811,11 @@
     // Initialize
     updateDisplay();
 
-    // Prompt for salary if not set
-    const currentPeriod = getBiWeeklyPeriod(0);
-    if (!salaries[currentPeriod.key]) {
+    // First time setup
+    if (!localStorage.getItem('paySettings')) {
       setTimeout(() => {
-        const salary = prompt(`Welcome! Enter your bi-weekly salary for ${formatDate(currentPeriod.start)} - ${formatDate(currentPeriod.end)}:`);
-        if (salary && !isNaN(salary)) {
-          salaries[currentPeriod.key] = parseFloat(salary);
-          localStorage.setItem('salaries', JSON.stringify(salaries));
-          updateDisplay();
-        }
+        alert('Welcome! Click the Settings button (⚙️) in the top-right to configure your pay schedule.');
+        openSettings();
       }, 500);
     }
   </script>
