@@ -550,6 +550,9 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
     }
 
     .expense-item:hover .delete-btn {
@@ -1280,11 +1283,12 @@
         `;
       }).join('');
       
-      // EVENT DELEGATION - Delete button listener
+      // EVENT DELEGATION - Delete button listener (iOS + Desktop compatible)
       listEl.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
+        const handleDelete = function(e) {
           e.preventDefault();
           e.stopPropagation();
+          e.stopImmediatePropagation();
           
           const expenseItem = this.closest('.expense-item');
           const expenseId = parseInt(expenseItem.dataset.expenseId);
@@ -1298,7 +1302,11 @@
               updateDisplay();
             }
           }
-        });
+        };
+        
+        // Listen to BOTH click and touchend for iOS/Android compatibility
+        btn.addEventListener('click', handleDelete, false);
+        btn.addEventListener('touchend', handleDelete, false);
       });
     }
 
@@ -1328,11 +1336,12 @@
         `;
       }).join('');
       
-      // EVENT DELEGATION - Delete button listener
+      // EVENT DELEGATION - Delete button listener (iOS + Desktop compatible)
       listEl.querySelectorAll('.delete-btn').forEach(btn => {
-        btn.addEventListener('click', function(e) {
+        const handleDelete = function(e) {
           e.preventDefault();
           e.stopPropagation();
+          e.stopImmediatePropagation();
           
           const utilityItem = this.closest('.expense-item');
           const utilityId = parseInt(utilityItem.dataset.utilityId);
@@ -1346,7 +1355,11 @@
               updateMonthlyDisplay();
             }
           }
-        });
+        };
+        
+        // Listen to BOTH click and touchend for iOS/Android compatibility
+        btn.addEventListener('click', handleDelete, false);
+        btn.addEventListener('touchend', handleDelete, false);
       });
     }
 
