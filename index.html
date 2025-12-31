@@ -218,17 +218,26 @@
       font-weight: 700;
       color: #fff;
       letter-spacing: -0.8px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
       text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
     }
 
-    .current-indicator {
-      font-size: 1.3rem;
-      color: #fbbf24;
+    .star-toggle {
+      font-size: 2rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      user-select: none;
+      filter: grayscale(100%) brightness(0.5);
+    }
+
+    .star-toggle:hover {
+      transform: scale(1.2) rotate(15deg);
+      filter: grayscale(0%) brightness(1);
+    }
+
+    .star-toggle.active {
+      filter: grayscale(0%) brightness(1);
       animation: pulse 2s ease-in-out infinite;
-      filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.5));
+      text-shadow: 0 0 12px rgba(251, 191, 36, 0.6);
     }
 
     @keyframes pulse {
@@ -240,40 +249,6 @@
         opacity: 0.7;
         transform: scale(1.15);
       }
-    }
-
-    .period-nav {
-      display: flex;
-      gap: 8px;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 6px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.2);
-    }
-
-    .period-nav button {
-      background: transparent;
-      border: none;
-      color: rgba(255, 255, 255, 0.6);
-      padding: 10px 20px;
-      border-radius: 9px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 600;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      position: relative;
-    }
-
-    .period-nav button:hover {
-      background: rgba(255, 255, 255, 0.1);
-      color: rgba(255, 255, 255, 0.95);
-    }
-
-    .period-nav button.active {
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.12));
-      color: #fff;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
 
     .period-dates {
@@ -618,11 +593,6 @@
       .summary-value {
         font-size: 1.8rem;
       }
-
-      .period-nav button {
-        padding: 8px 14px;
-        font-size: 0.85rem;
-      }
     }
   </style>
 </head>
@@ -642,14 +612,8 @@
     <!-- Left Pane: Bi-Weekly 1 -->
     <div class="pane" id="pane-1">
       <div class="pane-header">
-        <div class="pane-title">
-          Bi-Weekly 1
-          <span class="current-indicator" id="current-1" style="display: none;">⭐</span>
-        </div>
-        <div class="period-nav">
-          <button onclick="changePeriod(0, 1)" id="btn-1-0">Current</button>
-          <button onclick="changePeriod(1, 1)" id="btn-1-1">Next</button>
-        </div>
+        <div class="pane-title">Bi-Weekly 1</div>
+        <div class="star-toggle" id="star-1" onclick="togglePeriod(1)">⭐</div>
       </div>
 
       <div class="period-dates">
@@ -700,14 +664,8 @@
     <!-- Right Pane: Bi-Weekly 2 -->
     <div class="pane" id="pane-2">
       <div class="pane-header">
-        <div class="pane-title">
-          Bi-Weekly 2
-          <span class="current-indicator" id="current-2" style="display: none;">⭐</span>
-        </div>
-        <div class="period-nav">
-          <button onclick="changePeriod(0, 2)" id="btn-2-0">Current</button>
-          <button onclick="changePeriod(1, 2)" id="btn-2-1">Next</button>
-        </div>
+        <div class="pane-title">Bi-Weekly 2</div>
+        <div class="star-toggle" id="star-2" onclick="togglePeriod(2)">⭐</div>
       </div>
 
       <div class="period-dates">
@@ -825,11 +783,6 @@
             localStorage.setItem('paySettings', JSON.stringify(settings));
             savePaneStates();
             
-            document.getElementById(`btn-1-0`).classList.toggle('active', pane1Offset === 0);
-            document.getElementById(`btn-1-1`).classList.toggle('active', pane1Offset === 1);
-            document.getElementById(`btn-2-0`).classList.toggle('active', pane2Offset === 0);
-            document.getElementById(`btn-2-1`).classList.toggle('active', pane2Offset === 1);
-            
             updateDisplay();
             alert('✅ Data imported successfully!');
           }
@@ -841,6 +794,17 @@
       reader.readAsText(file);
       
       event.target.value = '';
+    }
+
+    function togglePeriod(paneNum) {
+      if (paneNum === 1) {
+        pane1Offset = pane1Offset === 0 ? 1 : 0;
+      } else {
+        pane2Offset = pane2Offset === 0 ? 1 : 0;
+      }
+      
+      savePaneStates();
+      updateDisplay();
     }
 
     function getPeriod(offset = 0) {
@@ -871,21 +835,6 @@
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
 
-    function changePeriod(offset, paneNum) {
-      if (paneNum === 1) {
-        pane1Offset = offset;
-      } else {
-        pane2Offset = offset;
-      }
-      
-      savePaneStates();
-      
-      document.getElementById(`btn-${paneNum}-0`).classList.toggle('active', offset === 0);
-      document.getElementById(`btn-${paneNum}-1`).classList.toggle('active', offset === 1);
-      
-      updateDisplay();
-    }
-
     function updateDisplay() {
       updatePane(1, pane1Offset);
       updatePane(2, pane2Offset);
@@ -894,17 +843,18 @@
     function updatePane(paneNum, offset) {
       const period = getPeriod(offset);
       const pane = document.getElementById(`pane-${paneNum}`);
-      const currentIndicator = document.getElementById(`current-${paneNum}`);
+      const star = document.getElementById(`star-${paneNum}`);
       
       // Update period dates display
       document.getElementById(`period-${paneNum}-dates`).textContent = 
         `${formatDate(period.start)} - ${formatDate(period.end)}`;
       
+      // Update star and pane styling
       if (offset === 0) {
-        currentIndicator.style.display = 'inline';
+        star.classList.add('active');
         pane.classList.add('current');
       } else {
-        currentIndicator.style.display = 'none';
+        star.classList.remove('active');
         pane.classList.remove('current');
       }
       
@@ -1016,11 +966,6 @@
       if (e.key === 'Enter') addExpense(2);
     });
 
-    document.getElementById(`btn-1-0`).classList.toggle('active', pane1Offset === 0);
-    document.getElementById(`btn-1-1`).classList.toggle('active', pane1Offset === 1);
-    document.getElementById(`btn-2-0`).classList.toggle('active', pane2Offset === 0);
-    document.getElementById(`btn-2-1`).classList.toggle('active', pane2Offset === 1);
-    
     updateDisplay();
   </script>
 </body>
