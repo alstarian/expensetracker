@@ -486,13 +486,21 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       border: 1px solid rgba(255, 255, 255, 0.08);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
       position: relative;
       touch-action: pan-y;
       -webkit-user-select: none;
       user-select: none;
+      /* Hardware acceleration for smooth animations */
+      will-change: transform;
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
+    }
+
+    /* Only add transition when NOT actively swiping */
+    .expense-item.transitioning {
+      transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .expense-item::before {
@@ -521,7 +529,7 @@
     }
 
     .expense-item.swiped {
-      transform: translateX(-160px);
+      transform: translate3d(-160px, 0, 0);
     }
 
     .expense-item.swiped + .swipe-actions {
@@ -532,7 +540,8 @@
     /* Desktop hover reveal */
     @media (hover: hover) and (pointer: fine) {
       .expense-item-wrapper:hover .expense-item {
-        transform: translateX(-160px);
+        transform: translate3d(-160px, 0, 0);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       }
       
       .expense-item-wrapper:hover .swipe-actions {
@@ -1518,6 +1527,8 @@
       const handleTouchStart = (e) => {
         startX = e.touches[0].clientX;
         isSwiping = false;
+        // Remove transition for instant tracking
+        item.classList.remove('transitioning');
       };
       
       const handleTouchMove = (e) => {
@@ -1525,18 +1536,24 @@
         currentX = e.touches[0].clientX;
         const diff = startX - currentX;
         
-        if (Math.abs(diff) > 10) {
+        if (Math.abs(diff) > 5) {
           isSwiping = true;
         }
         
+        // Use translate3d for hardware acceleration and smooth 60fps
         if (diff > 0 && diff < 160) {
-          item.style.transform = `translateX(-${diff}px)`;
+          item.style.transform = `translate3d(-${diff}px, 0, 0)`;
+        } else if (diff <= 0) {
+          item.style.transform = 'translate3d(0, 0, 0)';
         }
       };
       
       const handleTouchEnd = (e) => {
         if (!startX) return;
         const diff = startX - currentX;
+        
+        // Add transition back for snap effect
+        item.classList.add('transitioning');
         
         if (isSwiping && diff > swipeThreshold) {
           item.classList.add('swiped');
@@ -1551,6 +1568,7 @@
         isSwiping = false;
       };
       
+      // Use passive: false for preventDefault capability if needed
       item.addEventListener('touchstart', handleTouchStart, { passive: true });
       item.addEventListener('touchmove', handleTouchMove, { passive: true });
       item.addEventListener('touchend', handleTouchEnd, { passive: true });
