@@ -771,12 +771,13 @@
         <label class="input-label">Utility Type</label>
         <select id="utility-type">
           <option value="">Select utility...</option>
-          <option value="Hydro">Hydro</option>
-          <option value="Gas">Gas</option>
-          <option value="Water">Water</option>
-          <option value="Internet">Internet</option>
-          <option value="Phone">Phone</option>
-          <option value="Insurance">Insurance</option>
+          <option value="💧 Water">💧 Water</option>
+          <option value="🔥 Gas">🔥 Gas</option>
+          <option value="⚡ Hydro">⚡ Hydro</option>
+          <option value="📡 Internet">📡 Internet</option>
+          <option value="📱 Phone">📱 Phone</option>
+          <option value="🏠 Home Insurance">🏠 Home Insurance</option>
+          <option value="🚗 Car Insurance">🚗 Car Insurance</option>
           <option value="Other">Other</option>
         </select>
       </div>
@@ -807,7 +808,7 @@
     let salaries = JSON.parse(localStorage.getItem('salaries')) || {};
     let utilities = JSON.parse(localStorage.getItem('utilities')) || [];
     let settings = JSON.parse(localStorage.getItem('paySettings')) || {
-      startDate: '2026-01-07'
+      startDate: '2025-12-24'  // FIXED: Changed from future date to actual current period
     };
 
     let paneStates = JSON.parse(localStorage.getItem('paneStates')) || {
@@ -819,7 +820,6 @@
     let pane2Offset = paneStates.pane2Offset;
     let currentMonthOffset = 0;
 
-    // Show custom input if "Other" is selected
     document.getElementById('utility-type').addEventListener('change', function() {
       const customGroup = document.getElementById('custom-utility-group');
       if (this.value === 'Other') {
@@ -873,7 +873,7 @@
             transactions = imported.transactions || [];
             salaries = imported.salaries || {};
             utilities = imported.utilities || [];
-            settings = imported.settings || { startDate: '2026-01-07' };
+            settings = imported.settings || { startDate: '2025-12-24' };
             
             if (imported.paneStates) {
               pane1Offset = imported.paneStates.pane1Offset || 0;
@@ -901,14 +901,11 @@
     }
 
     function togglePeriod(paneNum) {
-      // Toggle only THIS pane between current (0) and next (1)
       if (paneNum === 1) {
         pane1Offset = pane1Offset === 0 ? 1 : 0;
-        // Make sure the other pane shows the opposite
         pane2Offset = pane1Offset === 0 ? 1 : 0;
       } else {
         pane2Offset = pane2Offset === 0 ? 1 : 0;
-        // Make sure the other pane shows the opposite
         pane1Offset = pane2Offset === 0 ? 1 : 0;
       }
       
