@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Expense Tracker</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
     * {
       margin: 0;
@@ -14,14 +14,14 @@
     }
 
     body {
-      font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      background-attachment: fixed;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0a0a;
       min-height: 100vh;
       padding: 40px 20px;
       display: flex;
       align-items: center;
       justify-content: center;
+      color: #fff;
     }
 
     .container {
@@ -33,14 +33,25 @@
     }
 
     .pane {
-      background: rgba(255, 255, 255, 0.15);
-      backdrop-filter: blur(30px) saturate(180%);
-      -webkit-backdrop-filter: blur(30px) saturate(180%);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 24px;
+      background: linear-gradient(135deg, rgba(30, 30, 30, 0.9) 0%, rgba(20, 20, 20, 0.95) 100%);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 20px;
       padding: 40px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-      color: white;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .pane::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
     }
 
     .pane-header {
@@ -49,27 +60,29 @@
       align-items: center;
       margin-bottom: 32px;
       padding-bottom: 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .pane-title {
       font-size: 1.4rem;
       font-weight: 600;
-      color: white;
+      color: #fff;
+      letter-spacing: -0.5px;
     }
 
     .period-nav {
       display: flex;
-      gap: 8px;
-      background: rgba(255, 255, 255, 0.1);
-      padding: 6px;
-      border-radius: 12px;
+      gap: 6px;
+      background: rgba(255, 255, 255, 0.03);
+      padding: 4px;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .period-nav button {
       background: transparent;
       border: none;
-      color: white;
+      color: rgba(255, 255, 255, 0.6);
       padding: 8px 16px;
       border-radius: 8px;
       cursor: pointer;
@@ -79,17 +92,20 @@
     }
 
     .period-nav button:hover {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.08);
+      color: rgba(255, 255, 255, 0.9);
     }
 
     .period-nav button.active {
-      background: rgba(255, 255, 255, 0.25);
+      background: rgba(255, 255, 255, 0.12);
+      color: #fff;
     }
 
     .period-dates {
       font-size: 0.95rem;
-      color: rgba(255, 255, 255, 0.8);
+      color: rgba(255, 255, 255, 0.5);
       margin-bottom: 24px;
+      font-weight: 400;
     }
 
     .summary {
@@ -100,88 +116,104 @@
     }
 
     .summary-item {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
       padding: 20px;
-      border-radius: 16px;
+      border-radius: 14px;
       text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.3s;
+    }
+
+    .summary-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.08);
+      transform: translateY(-2px);
     }
 
     .summary-label {
-      font-size: 0.85rem;
-      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.5);
       margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 500;
+    }
+
+    .summary-value {
+      font-size: 1.9rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -1px;
+    }
+
+    .summary-value.positive {
+      color: #10b981;
+    }
+
+    .summary-value.negative {
+      color: #ef4444;
+    }
+
+    .input-group {
+      margin-bottom: 20px;
+    }
+
+    .input-label {
+      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 8px;
+      display: block;
+      font-weight: 500;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
-    .summary-value {
-      font-size: 1.8rem;
-      font-weight: 600;
-      color: white;
-    }
-
-    .summary-value.positive {
-      color: #4ade80;
-    }
-
-    .summary-value.negative {
-      color: #f87171;
-    }
-
-    .input-group {
-      margin-bottom: 24px;
-    }
-
-    .input-label {
-      font-size: 0.9rem;
-      color: rgba(255, 255, 255, 0.8);
-      margin-bottom: 8px;
-      display: block;
-    }
-
     input, select {
       width: 100%;
-      background: rgba(255, 255, 255, 0.15);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 10px;
       padding: 14px 16px;
-      color: white;
+      color: #fff;
       font-size: 1rem;
       font-family: inherit;
       transition: all 0.2s;
     }
 
     input::placeholder {
-      color: rgba(255, 255, 255, 0.5);
+      color: rgba(255, 255, 255, 0.3);
     }
 
     input:focus, select:focus {
       outline: none;
-      background: rgba(255, 255, 255, 0.2);
-      border-color: rgba(255, 255, 255, 0.4);
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.02);
     }
 
     select option {
-      background: #764ba2;
-      color: white;
+      background: #1a1a1a;
+      color: #fff;
     }
 
     .btn {
       width: 100%;
-      background: white;
-      color: #667eea;
+      background: #fff;
+      color: #0a0a0a;
       border: none;
-      border-radius: 12px;
+      border-radius: 10px;
       padding: 16px;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
     }
 
     .btn:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 12px 24px rgba(255, 255, 255, 0.1);
     }
 
     .btn:active {
@@ -192,21 +224,25 @@
       max-height: 400px;
       overflow-y: auto;
       margin-top: 24px;
+      padding-right: 4px;
     }
 
     .expense-item {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.03);
       padding: 16px;
       border-radius: 12px;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
       transition: all 0.2s;
+      border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
     .expense-item:hover {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(255, 255, 255, 0.08);
+      transform: translateX(4px);
     }
 
     .expense-info {
@@ -216,66 +252,68 @@
     .expense-desc {
       font-size: 1rem;
       font-weight: 500;
-      color: white;
+      color: #fff;
       margin-bottom: 4px;
     }
 
     .expense-cat {
-      font-size: 0.85rem;
-      color: rgba(255, 255, 255, 0.6);
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.4);
     }
 
     .expense-amount {
       font-size: 1.2rem;
       font-weight: 600;
-      color: white;
+      color: #fff;
       margin-right: 12px;
     }
 
     .delete-btn {
-      background: rgba(239, 68, 68, 0.3);
-      border: none;
-      color: white;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.2);
+      color: #ef4444;
       padding: 8px 12px;
       border-radius: 8px;
       cursor: pointer;
       font-size: 0.85rem;
       transition: all 0.2s;
+      font-weight: 500;
     }
 
     .delete-btn:hover {
-      background: rgba(239, 68, 68, 0.5);
+      background: rgba(239, 68, 68, 0.25);
+      border-color: rgba(239, 68, 68, 0.3);
     }
 
     .empty-state {
       text-align: center;
       padding: 60px 20px;
-      color: rgba(255, 255, 255, 0.5);
+      color: rgba(255, 255, 255, 0.3);
     }
 
     .empty-state-icon {
-      font-size: 4rem;
+      font-size: 3.5rem;
       margin-bottom: 16px;
-      opacity: 0.5;
+      opacity: 0.4;
     }
 
     /* Scrollbar styling */
     .expenses-list::-webkit-scrollbar {
-      width: 8px;
+      width: 6px;
     }
 
     .expenses-list::-webkit-scrollbar-track {
-      background: rgba(255, 255, 255, 0.05);
-      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 3px;
     }
 
     .expenses-list::-webkit-scrollbar-thumb {
-      background: rgba(255, 255, 255, 0.2);
-      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 3px;
     }
 
     .expenses-list::-webkit-scrollbar-thumb:hover {
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba(255, 255, 255, 0.15);
     }
 
     @media (max-width: 1024px) {
@@ -319,7 +357,7 @@
       <div class="pane-header">
         <div class="pane-title">Period 1</div>
         <div class="period-nav">
-          <button onclick="changePeriod(0, 1)">Current</button>
+          <button onclick="changePeriod(0, 1)" class="active">Current</button>
           <button onclick="changePeriod(1, 1)">Next</button>
         </div>
       </div>
@@ -372,7 +410,7 @@
         <div class="pane-title">Period 2</div>
         <div class="period-nav">
           <button onclick="changePeriod(0, 2)">Current</button>
-          <button onclick="changePeriod(1, 2)">Next</button>
+          <button onclick="changePeriod(1, 2)" class="active">Next</button>
         </div>
       </div>
 
@@ -459,17 +497,19 @@
 
     function changePeriod(offset, paneNum) {
       if (paneNum === 1) {
-        if (offset === 0) {
-          pane1Offset = 0;
-        } else {
-          pane1Offset = 1;
-        }
+        pane1Offset = offset;
+        // Update active state for pane 1 buttons
+        const buttons = document.querySelectorAll('#pane-1 .period-nav button');
+        buttons.forEach((btn, idx) => {
+          btn.classList.toggle('active', idx === offset);
+        });
       } else {
-        if (offset === 0) {
-          pane2Offset = 0;
-        } else {
-          pane2Offset = 1;
-        }
+        pane2Offset = offset;
+        // Update active state for pane 2 buttons
+        const buttons = document.querySelectorAll('#pane-2 .period-nav button');
+        buttons.forEach((btn, idx) => {
+          btn.classList.toggle('active', idx === offset);
+        });
       }
       updateDisplay();
     }
