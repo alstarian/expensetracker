@@ -46,10 +46,10 @@
     }
 
     .container {
-      max-width: 1400px;
+      max-width: 1600px;
       width: 100%;
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 32px;
       position: relative;
       z-index: 1;
@@ -153,7 +153,7 @@
       -webkit-backdrop-filter: blur(30px) saturate(180%);
       border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 24px;
-      padding: 44px;
+      padding: 36px;
       box-shadow: 
         0 24px 64px rgba(0, 0, 0, 0.5),
         inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -195,6 +195,18 @@
       background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.4), transparent);
     }
 
+    .pane.monthly {
+      border-color: rgba(59, 130, 246, 0.4);
+      box-shadow: 
+        0 24px 64px rgba(0, 0, 0, 0.5),
+        0 0 40px rgba(59, 130, 246, 0.15),
+        inset 0 1px 0 rgba(59, 130, 246, 0.2);
+    }
+
+    .pane.monthly::before {
+      background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.4), transparent);
+    }
+
     .pane:hover {
       transform: translateY(-4px);
       box-shadow: 
@@ -206,15 +218,15 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 24px;
-      padding-bottom: 24px;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
       border-bottom: 1px solid rgba(255, 255, 255, 0.08);
       position: relative;
       z-index: 1;
     }
 
     .pane-title {
-      font-size: 1.6rem;
+      font-size: 1.4rem;
       font-weight: 700;
       color: #fff;
       letter-spacing: -0.8px;
@@ -222,7 +234,7 @@
     }
 
     .star-toggle {
-      font-size: 2rem;
+      font-size: 1.8rem;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       user-select: none;
@@ -254,16 +266,16 @@
     .period-dates {
       background: rgba(255, 255, 255, 0.05);
       border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 12px 18px;
+      padding: 10px 16px;
       border-radius: 12px;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       text-align: center;
       position: relative;
       z-index: 1;
     }
 
     .period-dates-label {
-      font-size: 0.7rem;
+      font-size: 0.65rem;
       color: rgba(255, 255, 255, 0.5);
       text-transform: uppercase;
       letter-spacing: 1px;
@@ -271,7 +283,7 @@
     }
 
     .period-dates-value {
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       color: rgba(255, 255, 255, 0.9);
       font-weight: 600;
     }
@@ -279,16 +291,16 @@
     .summary {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 16px;
-      margin-bottom: 36px;
+      gap: 12px;
+      margin-bottom: 28px;
       position: relative;
       z-index: 1;
     }
 
     .summary-item {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.03));
-      padding: 24px;
-      border-radius: 16px;
+      padding: 18px;
+      border-radius: 14px;
       text-align: center;
       border: 1px solid rgba(255, 255, 255, 0.1);
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -317,26 +329,26 @@
 
     .summary-item:hover {
       border-color: rgba(255, 255, 255, 0.2);
-      transform: translateY(-4px) scale(1.02);
+      transform: translateY(-3px) scale(1.02);
       box-shadow: 
         0 8px 24px rgba(0, 0, 0, 0.3),
         inset 0 1px 0 rgba(255, 255, 255, 0.15);
     }
 
     .summary-label {
-      font-size: 0.75rem;
+      font-size: 0.65rem;
       color: rgba(255, 255, 255, 0.6);
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       text-transform: uppercase;
-      letter-spacing: 1.5px;
+      letter-spacing: 1.2px;
       font-weight: 600;
     }
 
     .summary-value {
-      font-size: 2.2rem;
+      font-size: 1.6rem;
       font-weight: 800;
       color: #fff;
-      letter-spacing: -1.5px;
+      letter-spacing: -1px;
       text-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
     }
 
@@ -351,29 +363,29 @@
     }
 
     .input-group {
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       position: relative;
       z-index: 1;
     }
 
     .input-label {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: rgba(255, 255, 255, 0.7);
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       display: block;
       font-weight: 600;
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.8px;
     }
 
     input, select {
       width: 100%;
       background: rgba(255, 255, 255, 0.06);
       border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 12px;
-      padding: 16px 18px;
+      border-radius: 10px;
+      padding: 12px 14px;
       color: #fff;
-      font-size: 1rem;
+      font-size: 0.95rem;
       font-family: inherit;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -403,14 +415,14 @@
       background: linear-gradient(135deg, #ffffff, #f0f0f0);
       color: #0a0a0a;
       border: none;
-      border-radius: 12px;
-      padding: 18px;
-      font-size: 0.95rem;
+      border-radius: 10px;
+      padding: 14px;
+      font-size: 0.85rem;
       font-weight: 700;
       cursor: pointer;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.8px;
       position: relative;
       overflow: hidden;
       box-shadow: 
@@ -446,9 +458,9 @@
     }
 
     .expenses-list {
-      max-height: 420px;
+      max-height: 350px;
       overflow-y: auto;
-      margin-top: 28px;
+      margin-top: 20px;
       padding-right: 8px;
       position: relative;
       z-index: 1;
@@ -456,9 +468,9 @@
 
     .expense-item {
       background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.03));
-      padding: 18px;
-      border-radius: 14px;
-      margin-bottom: 12px;
+      padding: 14px;
+      border-radius: 12px;
+      margin-bottom: 10px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -496,22 +508,22 @@
     }
 
     .expense-desc {
-      font-size: 1.05rem;
+      font-size: 0.95rem;
       font-weight: 600;
       color: #fff;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
 
     .expense-cat {
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       color: rgba(255, 255, 255, 0.5);
     }
 
     .expense-amount {
-      font-size: 1.3rem;
+      font-size: 1.1rem;
       font-weight: 700;
       color: #fff;
-      margin-right: 16px;
+      margin-right: 12px;
       text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
     }
 
@@ -519,10 +531,10 @@
       background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.15));
       border: 1px solid rgba(239, 68, 68, 0.3);
       color: #ef4444;
-      padding: 9px 14px;
-      border-radius: 10px;
+      padding: 7px 11px;
+      border-radius: 8px;
       cursor: pointer;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
       font-weight: 600;
       box-shadow: 0 2px 8px rgba(239, 68, 68, 0.2);
@@ -537,29 +549,29 @@
 
     .empty-state {
       text-align: center;
-      padding: 70px 20px;
+      padding: 50px 20px;
       color: rgba(255, 255, 255, 0.35);
     }
 
     .empty-state-icon {
-      font-size: 4rem;
-      margin-bottom: 20px;
+      font-size: 3rem;
+      margin-bottom: 16px;
       opacity: 0.5;
       filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
     }
 
     .expenses-list::-webkit-scrollbar {
-      width: 8px;
+      width: 6px;
     }
 
     .expenses-list::-webkit-scrollbar-track {
       background: rgba(255, 255, 255, 0.03);
-      border-radius: 4px;
+      border-radius: 3px;
     }
 
     .expenses-list::-webkit-scrollbar-thumb {
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.15), rgba(255, 255, 255, 0.1));
-      border-radius: 4px;
+      border-radius: 3px;
       border: 1px solid rgba(255, 255, 255, 0.05);
     }
 
@@ -567,31 +579,54 @@
       background: linear-gradient(180deg, rgba(255, 255, 255, 0.2), rgba(255, 255, 255, 0.15));
     }
 
-    @media (max-width: 1024px) {
+    .month-nav {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    .month-nav button {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: white;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: all 0.2s;
+    }
+
+    .month-nav button:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(1.1);
+    }
+
+    .month-display {
+      font-size: 1.1rem;
+      font-weight: 600;
+      min-width: 140px;
+      text-align: center;
+    }
+
+    @media (max-width: 1400px) {
+      .container {
+        grid-template-columns: 1fr 1fr;
+      }
+      
+      .pane.monthly {
+        grid-column: 1 / -1;
+      }
+    }
+
+    @media (max-width: 768px) {
       .container {
         grid-template-columns: 1fr;
       }
 
       .summary {
         grid-template-columns: 1fr;
-      }
-    }
-
-    @media (max-width: 640px) {
-      body {
-        padding: 30px 15px;
-      }
-
-      .pane {
-        padding: 28px;
-      }
-
-      .pane-title {
-        font-size: 1.3rem;
-      }
-
-      .summary-value {
-        font-size: 1.8rem;
       }
     }
   </style>
@@ -712,11 +747,65 @@
         </div>
       </div>
     </div>
+
+    <!-- Third Pane: Monthly Utilities -->
+    <div class="pane monthly" id="pane-monthly">
+      <div class="pane-header">
+        <div class="pane-title">Monthly Utilities</div>
+      </div>
+
+      <div class="month-nav">
+        <button onclick="changeMonth(-1)">◀</button>
+        <div class="month-display" id="month-display">Loading...</div>
+        <button onclick="changeMonth(1)">▶</button>
+      </div>
+
+      <div class="summary">
+        <div class="summary-item">
+          <div class="summary-label">Total Bills</div>
+          <div class="summary-value" id="monthly-total">$0</div>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Utility Type</label>
+        <select id="utility-type">
+          <option value="">Select utility...</option>
+          <option value="Hydro">Hydro</option>
+          <option value="Gas">Gas</option>
+          <option value="Water">Water</option>
+          <option value="Internet">Internet</option>
+          <option value="Phone">Phone</option>
+          <option value="Insurance">Insurance</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div class="input-group" id="custom-utility-group" style="display: none;">
+        <label class="input-label">Custom Utility</label>
+        <input type="text" id="custom-utility" placeholder="Enter utility name">
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Amount</label>
+        <input type="number" id="utility-amount" placeholder="0.00" step="0.01">
+      </div>
+
+      <button class="btn" onclick="addUtility()">Add Utility</button>
+
+      <div class="expenses-list" id="utilities-list">
+        <div class="empty-state">
+          <div class="empty-state-icon">💡</div>
+          <div>No utilities yet</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script>
     let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
     let salaries = JSON.parse(localStorage.getItem('salaries')) || {};
+    let utilities = JSON.parse(localStorage.getItem('utilities')) || [];
     let settings = JSON.parse(localStorage.getItem('paySettings')) || {
       startDate: '2026-01-07'
     };
@@ -728,6 +817,17 @@
 
     let pane1Offset = paneStates.pane1Offset;
     let pane2Offset = paneStates.pane2Offset;
+    let currentMonthOffset = 0;
+
+    // Show custom input if "Other" is selected
+    document.getElementById('utility-type').addEventListener('change', function() {
+      const customGroup = document.getElementById('custom-utility-group');
+      if (this.value === 'Other') {
+        customGroup.style.display = 'block';
+      } else {
+        customGroup.style.display = 'none';
+      }
+    });
 
     function savePaneStates() {
       localStorage.setItem('paneStates', JSON.stringify({
@@ -740,10 +840,11 @@
       const data = {
         transactions,
         salaries,
+        utilities,
         settings,
         paneStates: { pane1Offset, pane2Offset },
         exportDate: new Date().toISOString(),
-        version: '1.0'
+        version: '1.1'
       };
       
       const dataStr = JSON.stringify(data, null, 2);
@@ -771,6 +872,7 @@
           if (confirm('Import data? This will replace your current data on this device.')) {
             transactions = imported.transactions || [];
             salaries = imported.salaries || {};
+            utilities = imported.utilities || [];
             settings = imported.settings || { startDate: '2026-01-07' };
             
             if (imported.paneStates) {
@@ -780,10 +882,12 @@
             
             localStorage.setItem('transactions', JSON.stringify(transactions));
             localStorage.setItem('salaries', JSON.stringify(salaries));
+            localStorage.setItem('utilities', JSON.stringify(utilities));
             localStorage.setItem('paySettings', JSON.stringify(settings));
             savePaneStates();
             
             updateDisplay();
+            updateMonthlyDisplay();
             alert('✅ Data imported successfully!');
           }
         } catch (error) {
@@ -797,17 +901,13 @@
     }
 
     function togglePeriod(paneNum) {
-      // If this pane is viewing current (offset 0), switch to next (offset 1)
-      // If this pane is viewing next (offset 1), switch to current (offset 0)
       if (paneNum === 1) {
         const newOffset = pane1Offset === 0 ? 1 : 0;
         pane1Offset = newOffset;
-        // Force the other pane to opposite
         pane2Offset = newOffset === 0 ? 1 : 0;
       } else {
         const newOffset = pane2Offset === 0 ? 1 : 0;
         pane2Offset = newOffset;
-        // Force the other pane to opposite
         pane1Offset = newOffset === 0 ? 1 : 0;
       }
       
@@ -839,21 +939,34 @@
       };
     }
 
+    function getMonth(offset = 0) {
+      const today = new Date();
+      const month = new Date(today.getFullYear(), today.getMonth() + offset, 1);
+      return {
+        year: month.getFullYear(),
+        month: month.getMonth(),
+        key: `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`,
+        display: month.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+      };
+    }
+
     function formatDate(date) {
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     }
 
-    // Check if we need to auto-advance periods when current period ends
+    function changeMonth(direction) {
+      currentMonthOffset += direction;
+      updateMonthlyDisplay();
+    }
+
     function checkPeriodRollover() {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       
       const currentPeriod = getPeriod(0);
       
-      // If today is past the current period end, auto-advance both panes
       if (today > currentPeriod.end) {
         console.log('Period ended - auto-advancing...');
-        // Shift both offsets forward by 1 (but maintain their relative difference)
         pane1Offset = Math.max(0, pane1Offset - 1);
         pane2Offset = Math.max(0, pane2Offset - 1);
         savePaneStates();
@@ -870,11 +983,9 @@
       const pane = document.getElementById(`pane-${paneNum}`);
       const star = document.getElementById(`star-${paneNum}`);
       
-      // Update period dates display
       document.getElementById(`period-${paneNum}-dates`).textContent = 
         `${formatDate(period.start)} - ${formatDate(period.end)}`;
       
-      // Update star and pane styling
       if (offset === 0) {
         star.classList.add('active');
         pane.classList.add('current');
@@ -905,6 +1016,18 @@
       renderExpenses(paneNum, periodExpenses);
     }
 
+    function updateMonthlyDisplay() {
+      const month = getMonth(currentMonthOffset);
+      document.getElementById('month-display').textContent = month.display;
+      
+      const monthUtilities = utilities.filter(u => u.month === month.key);
+      const total = monthUtilities.reduce((sum, u) => sum + u.amount, 0);
+      
+      document.getElementById('monthly-total').textContent = `$${total.toFixed(0)}`;
+      
+      renderUtilities(monthUtilities);
+    }
+
     function renderExpenses(paneNum, expenses) {
       const listEl = document.getElementById(`expenses-list-${paneNum}`);
       
@@ -928,6 +1051,34 @@
             </div>
             <div class="expense-amount">$${exp.amount.toFixed(2)}</div>
             <button class="delete-btn" onclick="deleteExpense(${actualIndex})">✕</button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderUtilities(utilityList) {
+      const listEl = document.getElementById('utilities-list');
+      
+      if (utilityList.length === 0) {
+        listEl.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">💡</div>
+            <div>No utilities yet</div>
+          </div>
+        `;
+        return;
+      }
+      
+      listEl.innerHTML = utilityList.map(util => {
+        const actualIndex = utilities.indexOf(util);
+        return `
+          <div class="expense-item">
+            <div class="expense-info">
+              <div class="expense-desc">${util.type}</div>
+              <div class="expense-cat">${util.month}</div>
+            </div>
+            <div class="expense-amount">$${util.amount.toFixed(2)}</div>
+            <button class="delete-btn" onclick="deleteUtility(${actualIndex})">✕</button>
           </div>
         `;
       }).join('');
@@ -961,11 +1112,63 @@
       updateDisplay();
     }
 
+    function addUtility() {
+      const typeSelect = document.getElementById('utility-type');
+      let type = typeSelect.value;
+      
+      if (!type) {
+        alert('Please select a utility type');
+        return;
+      }
+      
+      if (type === 'Other') {
+        type = document.getElementById('custom-utility').value.trim();
+        if (!type) {
+          alert('Please enter a custom utility name');
+          return;
+        }
+      }
+      
+      const amount = parseFloat(document.getElementById('utility-amount').value);
+      
+      if (!amount || amount <= 0) {
+        alert('Please enter an amount');
+        return;
+      }
+      
+      const month = getMonth(currentMonthOffset);
+      
+      const utility = {
+        id: Date.now(),
+        type,
+        amount,
+        month: month.key
+      };
+      
+      utilities.push(utility);
+      localStorage.setItem('utilities', JSON.stringify(utilities));
+      
+      typeSelect.value = '';
+      document.getElementById('custom-utility').value = '';
+      document.getElementById('utility-amount').value = '';
+      document.getElementById('custom-utility-group').style.display = 'none';
+      
+      updateMonthlyDisplay();
+    }
+
     function deleteExpense(index) {
       if (confirm('Delete this expense?')) {
         transactions.splice(index, 1);
         localStorage.setItem('transactions', JSON.stringify(transactions));
         updateDisplay();
+      }
+    }
+
+    function deleteUtility(index) {
+      if (confirm('Delete this utility bill?')) {
+        utilities.splice(index, 1);
+        localStorage.setItem('utilities', JSON.stringify(utilities));
+        updateMonthlyDisplay();
       }
     }
 
@@ -991,13 +1194,13 @@
       if (e.key === 'Enter') addExpense(2);
     });
 
-    // Check for period rollover on load
+    document.getElementById('utility-amount').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') addUtility();
+    });
+
     checkPeriodRollover();
-    
-    // Initialize display
     updateDisplay();
-    
-    // Check for period rollover every hour
+    updateMonthlyDisplay();
     setInterval(checkPeriodRollover, 3600000);
   </script>
 </body>
