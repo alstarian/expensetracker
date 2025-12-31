@@ -472,15 +472,15 @@
       <div class="form-group">
         <label>Pay Frequency</label>
         <select id="pay-frequency" onchange="updateFrequencySettings()">
-          <option value="biweekly">Bi-Weekly (Every 2 weeks)</option>
+          <option value="biweekly">Bi-Weekly (Every 14 days)</option>
           <option value="monthly">Monthly</option>
         </select>
       </div>
 
       <div class="form-group" id="biweekly-group">
-        <label>Next Pay Date (Start of Pay Period)</label>
+        <label>Your Next Pay Date</label>
         <input type="date" id="pay-start-date">
-        <div class="helper-text">Select the date your next paycheck arrives (e.g., Jan 7, 2025)</div>
+        <div class="helper-text">Select your next payday (e.g., Jan 7, 2025). The app will calculate all future periods from this date.</div>
       </div>
 
       <div class="form-group" id="monthly-group" style="display: none;">
@@ -499,7 +499,7 @@
   <div class="container">
     <header>
       <h1>💰 Expense Tracker</h1>
-      <p>Track your salary and savings</p>
+      <p>Track your bi-weekly salary and savings</p>
     </header>
 
     <div class="glass period-selector">
@@ -517,7 +517,7 @@
     <div class="summary-cards">
       <div class="card glass">
         <div class="card-label">
-          <span id="salary-label">Salary</span>
+          <span id="salary-label">Bi-Weekly Salary</span>
           <button class="edit-salary-btn" onclick="editSalary()">Edit</button>
         </div>
         <div class="card-amount" id="salary">$0.00</div>
@@ -629,17 +629,27 @@
         const startDate = new Date(settings.startDate);
         startDate.setHours(0, 0, 0, 0);
         
-        // Calculate which period we're currently in
-        const daysDiff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-        const currentPeriodNum = Math.floor(daysDiff / 14);
+        // Find which period today falls into or is closest to
+        let currentPeriodNum;
         
-        // Apply offset
+        if (today >= startDate) {
+          // We're on or after the start date
+          const daysDiff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+          currentPeriodNum = Math.floor(daysDiff / 14);
+        } else {
+          // We're before the start date, go backwards
+          const daysDiff = Math.ceil((today - startDate) / (1000 * 60 * 60 * 24));
+          currentPeriodNum = Math.floor(daysDiff / 14);
+        }
+        
+        // Apply offset to get the target period
         const targetPeriod = currentPeriodNum + offset;
         
-        // Calculate period start and end
+        // Calculate period start (this is a payday)
         const periodStart = new Date(startDate);
         periodStart.setDate(periodStart.getDate() + (targetPeriod * 14));
         
+        // Calculate period end (day before next payday)
         const periodEnd = new Date(periodStart);
         periodEnd.setDate(periodEnd.getDate() + 13);
         periodEnd.setHours(23, 59, 59, 999);
@@ -876,8 +886,7 @@
     // First time setup
     if (!localStorage.getItem('paySettings')) {
       setTimeout(() => {
-        alert('Welcome! Click the Settings button (⚙️) in the top-right to configure your pay schedule.');
-        openSettings();
+        alert('Welcome! Your pay schedule is set to bi-weekly starting Jan 7, 2025. Click Settings (⚙️) to change it.');
       }, 500);
     }
   </script>
