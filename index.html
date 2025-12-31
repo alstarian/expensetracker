@@ -153,6 +153,12 @@
       box-shadow: 0 4px 20px rgba(251, 191, 36, 0.2);
     }
 
+    .sync-btn.settings {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(139, 92, 246, 0.15));
+      border-color: rgba(139, 92, 246, 0.4);
+      box-shadow: 0 4px 20px rgba(139, 92, 246, 0.2);
+    }
+
     .pane {
       background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(15, 15, 15, 0.98) 100%);
       backdrop-filter: blur(30px) saturate(180%);
@@ -925,6 +931,44 @@
       background: rgba(255, 255, 255, 0.1);
     }
 
+    .settings-info {
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px solid rgba(139, 92, 246, 0.3);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+
+    .settings-info-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .settings-info-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #8b5cf6;
+    }
+
+    .warning-box {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 20px 0;
+    }
+
+    .warning-box p {
+      font-size: 0.9rem;
+      color: rgba(255, 255, 255, 0.8);
+      line-height: 1.6;
+      margin: 0;
+    }
+
     @media (max-width: 1200px) {
       .container {
         grid-template-columns: 1fr;
@@ -955,14 +999,17 @@
   <div class="container">
     <!-- Sync Bar -->
     <div class="sync-bar">
+      <button class="sync-btn settings" onclick="showSettings()">
+        ⚙️ Settings
+      </button>
       <button class="sync-btn analytics" onclick="showAnalytics()">
-        📊 View Analytics
+        📊 Analytics
       </button>
       <button class="sync-btn export" onclick="exportData()">
-        📥 Export Data
+        📥 Export
       </button>
       <button class="sync-btn import" onclick="document.getElementById('import-file').click()">
-        📤 Import Data
+        📤 Import
       </button>
       <input type="file" id="import-file" accept=".json" style="display: none;" onchange="importData(event)">
     </div>
@@ -1051,6 +1098,7 @@
           <option value="">Select utility...</option>
           <option value="💧 Water">💧 Water</option>
           <option value="🔥 Gas">🔥 Gas</option>
+          <option value="🔥 Heat">🔥 Heat</option>
           <option value="⚡ Hydro">⚡ Hydro</option>
           <option value="📡 Internet">📡 Internet</option>
           <option value="📱 Phone">📱 Phone</option>
@@ -1113,6 +1161,38 @@
       <p style="margin-top: 20px; font-size: 0.85rem; color: rgba(255,255,255,0.5);">
         💡 Tip: Choose the first day of any recent pay period. You can track past and future periods!
       </p>
+    </div>
+  </div>
+
+  <!-- Settings Modal -->
+  <div id="settings-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">Settings ⚙️</div>
+        <button class="close-btn" onclick="closeSettings()">✕</button>
+      </div>
+
+      <div class="settings-info">
+        <div class="settings-info-title">Current Pay Cycle Start</div>
+        <div class="settings-info-value" id="current-start-date">Loading...</div>
+      </div>
+
+      <div class="input-group">
+        <label class="input-label">Update Pay Cycle Start Date</label>
+        <input type="date" id="settings-start-date" max="2099-12-31">
+      </div>
+
+      <div class="warning-box">
+        <p>
+          ⚠️ <strong>Important:</strong> Changing your pay cycle start date will recalculate all periods. 
+          Your expenses and salaries will be preserved, but they may appear in different pay periods based on the new start date.
+        </p>
+      </div>
+
+      <div class="modal-buttons">
+        <button class="modal-btn cancel" onclick="closeSettings()">Cancel</button>
+        <button class="modal-btn save" onclick="saveSettings()">Save Changes</button>
+      </div>
     </div>
   </div>
 
@@ -1237,8 +1317,54 @@
       localStorage.setItem('paySettings', JSON.stringify(settings));
       document.getElementById('setup-wizard').classList.remove('active');
       
+      currentPeriodOffset = 0;
       updatePeriodDisplay();
       updateMonthlyDisplay();
+    }
+
+    function showSettings() {
+      if (!settings || !settings.startDate) {
+        alert('Please complete initial setup first');
+        return;
+      }
+      
+      const modal = document.getElementById('settings-modal');
+      document.getElementById('current-start-date').textContent = 
+        new Date(settings.startDate + 'T00:00:00').toLocaleDateString('en-US', { 
+          month: 'long', 
+          day: 'numeric', 
+          year: 'numeric' 
+        });
+      document.getElementById('settings-start-date').value = settings.startDate;
+      modal.classList.add('active');
+    }
+
+    function closeSettings() {
+      document.getElementById('settings-modal').classList.remove('active');
+    }
+
+    function saveSettings() {
+      const newStartDate = document.getElementById('settings-start-date').value;
+      
+      if (!newStartDate) {
+        alert('Please enter a valid start date');
+        return;
+      }
+      
+      if (!confirm('Are you sure you want to change your pay cycle start date? This will recalculate all periods.')) {
+        return;
+      }
+      
+      settings.startDate = newStartDate;
+      settings.lastModified = new Date().toISOString();
+      
+      localStorage.setItem('paySettings', JSON.stringify(settings));
+      
+      currentPeriodOffset = 0;
+      updatePeriodDisplay();
+      closeSettings();
+      
+      alert('✅ Pay cycle start date updated successfully!');
     }
 
     document.getElementById('utility-type').addEventListener('change', function() {
@@ -1388,10 +1514,13 @@
     window.onclick = function(event) {
       const analyticsModal = document.getElementById('analytics-modal');
       const editModal = document.getElementById('edit-modal');
+      const settingsModal = document.getElementById('settings-modal');
       if (event.target === analyticsModal) {
         closeAnalytics();
       } else if (event.target === editModal) {
         closeEditModal();
+      } else if (event.target === settingsModal) {
+        closeSettings();
       }
     }
 
@@ -1402,7 +1531,7 @@
         utilities,
         settings,
         exportDate: new Date().toISOString(),
-        version: '2.1'
+        version: '2.2'
       };
       
       const dataStr = JSON.stringify(data, null, 2);
@@ -1727,7 +1856,7 @@
         if (diff > 0 && diff < 160) {
           item.style.transform = `translate3d(-${diff}px, 0, 0)`;
         } else if (diff <= 0) {
-          item.style.transform = 'translate3d(0, 0, 0)';
+          item.style.transform = 'translate3d(0, 0, 0)`;
         }
       };
       
