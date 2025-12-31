@@ -147,6 +147,12 @@
       box-shadow: 0 4px 20px rgba(99, 102, 241, 0.2);
     }
 
+    .sync-btn.analytics {
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.25), rgba(251, 191, 36, 0.15));
+      border-color: rgba(251, 191, 36, 0.4);
+      box-shadow: 0 4px 20px rgba(251, 191, 36, 0.2);
+    }
+
     .pane {
       background: linear-gradient(135deg, rgba(30, 30, 30, 0.95) 0%, rgba(15, 15, 15, 0.98) 100%);
       backdrop-filter: blur(30px) saturate(180%);
@@ -610,6 +616,109 @@
       text-align: center;
     }
 
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(10px);
+    }
+
+    .modal.active {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background: linear-gradient(135deg, rgba(30, 30, 30, 0.98) 0%, rgba(15, 15, 15, 0.98) 100%);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 24px;
+      padding: 40px;
+      max-width: 800px;
+      width: 90%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 32px 96px rgba(0, 0, 0, 0.7);
+      position: relative;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .modal-title {
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .close-btn {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #ef4444;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s;
+    }
+
+    .close-btn:hover {
+      background: rgba(239, 68, 68, 0.3);
+      transform: rotate(90deg);
+    }
+
+    .analytics-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    .analytics-table th,
+    .analytics-table td {
+      padding: 16px;
+      text-align: left;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .analytics-table th {
+      background: rgba(255, 255, 255, 0.05);
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .analytics-table td {
+      font-size: 0.95rem;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .analytics-table tr:hover {
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .analytics-table td:last-child {
+      font-weight: 700;
+      color: #10b981;
+    }
+
     @media (max-width: 1400px) {
       .container {
         grid-template-columns: 1fr 1fr;
@@ -628,6 +737,15 @@
       .summary {
         grid-template-columns: 1fr;
       }
+
+      .analytics-table {
+        font-size: 0.85rem;
+      }
+
+      .analytics-table th,
+      .analytics-table td {
+        padding: 12px 8px;
+      }
     }
   </style>
 </head>
@@ -635,6 +753,9 @@
   <div class="container">
     <!-- Sync Bar -->
     <div class="sync-bar">
+      <button class="sync-btn analytics" onclick="showAnalytics()">
+        📊 View Analytics
+      </button>
       <button class="sync-btn export" onclick="exportData()">
         📥 Export Data
       </button>
@@ -803,6 +924,19 @@
     </div>
   </div>
 
+  <!-- Analytics Modal -->
+  <div id="analytics-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div class="modal-title">Utility Analytics - Yearly Averages</div>
+        <button class="close-btn" onclick="closeAnalytics()">✕</button>
+      </div>
+      <div id="analytics-body">
+        <!-- Analytics table will be inserted here -->
+      </div>
+    </div>
+  </div>
+
   <script>
     let transactions = JSON.parse(localStorage.getItem('transactions')) || [];
     let salaries = JSON.parse(localStorage.getItem('salaries')) || {};
@@ -828,6 +962,92 @@
         customGroup.style.display = 'none';
       }
     });
+
+    function showAnalytics() {
+      const modal = document.getElementById('analytics-modal');
+      const body = document.getElementById('analytics-body');
+      
+      // Group utilities by type
+      const utilityGroups = {};
+      utilities.forEach(util => {
+        if (!utilityGroups[util.type]) {
+          utilityGroups[util.type] = [];
+        }
+        utilityGroups[util.type].push(util.amount);
+      });
+      
+      // Calculate averages
+      const analytics = Object.keys(utilityGroups).map(type => {
+        const amounts = utilityGroups[type];
+        const sum = amounts.reduce((acc, curr) => acc + curr, 0);
+        const avg = sum / amounts.length;
+        const count = amounts.length;
+        const total = sum;
+        
+        return {
+          type,
+          count,
+          average: avg,
+          total: total
+        };
+      }).sort((a, b) => b.average - a.average);
+      
+      if (analytics.length === 0) {
+        body.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state-icon">📊</div>
+            <div>No utility data yet. Start adding monthly utilities to see analytics!</div>
+          </div>
+        `;
+      } else {
+        const totalAvg = analytics.reduce((sum, item) => sum + item.average, 0);
+        
+        body.innerHTML = `
+          <table class="analytics-table">
+            <thead>
+              <tr>
+                <th>Utility</th>
+                <th>Months Tracked</th>
+                <th>Total Spent</th>
+                <th>Average/Month</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${analytics.map(item => `
+                <tr>
+                  <td>${item.type}</td>
+                  <td>${item.count} month${item.count !== 1 ? 's' : ''}</td>
+                  <td>$${item.total.toFixed(2)}</td>
+                  <td>$${item.average.toFixed(2)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+            <tfoot>
+              <tr style="border-top: 2px solid rgba(255,255,255,0.2); font-weight: 700;">
+                <td>Total Monthly Average</td>
+                <td></td>
+                <td></td>
+                <td style="font-size: 1.1rem;">$${totalAvg.toFixed(2)}</td>
+              </tr>
+            </tfoot>
+          </table>
+        `;
+      }
+      
+      modal.classList.add('active');
+    }
+
+    function closeAnalytics() {
+      document.getElementById('analytics-modal').classList.remove('active');
+    }
+
+    // Close modal on outside click
+    window.onclick = function(event) {
+      const modal = document.getElementById('analytics-modal');
+      if (event.target === modal) {
+        closeAnalytics();
+      }
+    }
 
     function savePaneStates() {
       localStorage.setItem('paneStates', JSON.stringify({
