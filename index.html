@@ -23,7 +23,7 @@
     }
 
     .container {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
     }
 
@@ -75,6 +75,29 @@
       transform: translateY(-2px);
     }
 
+    .undo-btn {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      background: rgba(245, 158, 11, 0.2);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      z-index: 100;
+      display: none;
+    }
+
+    .undo-btn:hover {
+      background: rgba(245, 158, 11, 0.3);
+      transform: translateY(-2px);
+    }
+
     .modal {
       display: none;
       position: fixed;
@@ -98,7 +121,7 @@
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 24px;
       padding: 40px;
-      max-width: 600px;
+      max-width: 700px;
       width: 100%;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
       max-height: 90vh;
@@ -280,6 +303,38 @@
       font-weight: 600;
     }
 
+    .quick-add-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .quick-add-btn {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: white;
+      padding: 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .quick-add-btn:hover {
+      background: rgba(99, 102, 241, 0.3);
+      transform: scale(1.05);
+    }
+
+    .quick-add-btn .amount {
+      display: block;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+
     .form-grid {
       display: grid;
       grid-template-columns: 2fr 1fr;
@@ -287,7 +342,20 @@
       margin-bottom: 16px;
     }
 
-    input, select {
+    .search-box {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 14px 16px;
+      color: white;
+      font-size: 0.95rem;
+      font-family: 'Inter', sans-serif;
+      margin-bottom: 20px;
+      width: 100%;
+    }
+
+    input, select, textarea {
       background: rgba(255, 255, 255, 0.08);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.15);
@@ -299,11 +367,16 @@
       transition: all 0.2s;
     }
 
-    input::placeholder {
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    input::placeholder, textarea::placeholder {
       color: rgba(255, 255, 255, 0.4);
     }
 
-    input:focus, select:focus {
+    input:focus, select:focus, textarea:focus {
       outline: none;
       background: rgba(255, 255, 255, 0.12);
       border-color: rgba(255, 255, 255, 0.3);
@@ -349,14 +422,24 @@
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
     }
 
+    .btn-danger {
+      background: rgba(239, 68, 68, 0.2);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-danger:hover {
+      background: rgba(239, 68, 68, 0.3);
+      box-shadow: 0 8px 24px rgba(239, 68, 68, 0.2);
+    }
+
     .export-controls {
-      display: flex;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
       gap: 12px;
       margin-bottom: 20px;
     }
 
     .export-btn {
-      flex: 1;
       background: rgba(16, 185, 129, 0.2);
       border-color: rgba(16, 185, 129, 0.3);
     }
@@ -367,7 +450,6 @@
     }
 
     .import-btn {
-      flex: 1;
       background: rgba(245, 158, 11, 0.2);
       border-color: rgba(245, 158, 11, 0.3);
     }
@@ -378,7 +460,6 @@
     }
 
     .budget-btn {
-      flex: 1;
       background: rgba(139, 92, 246, 0.2);
       border-color: rgba(139, 92, 246, 0.3);
     }
@@ -393,6 +474,9 @@
       margin-bottom: 24px;
       color: white;
       font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .table-container {
@@ -442,6 +526,7 @@
     tbody tr {
       border-bottom: 1px solid rgba(255, 255, 255, 0.05);
       transition: all 0.2s ease;
+      cursor: pointer;
     }
 
     tbody tr:hover {
@@ -451,12 +536,14 @@
     tbody tr.total-row {
       background: rgba(255, 255, 255, 0.1);
       font-weight: 700;
+      cursor: default;
     }
 
     tbody tr.savings-row {
       background: rgba(16, 185, 129, 0.15);
       font-weight: 700;
       font-size: 1.1rem;
+      cursor: default;
     }
 
     td {
@@ -472,6 +559,28 @@
     .category-name {
       font-weight: 600;
       color: white;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .status-good {
+      background: #10b981;
+    }
+
+    .status-warning {
+      background: #f59e0b;
+    }
+
+    .status-over {
+      background: #ef4444;
     }
 
     .budget-amount {
@@ -496,9 +605,119 @@
       color: rgba(255, 255, 255, 0.5);
     }
 
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    .progress-good {
+      background: linear-gradient(90deg, #10b981, #059669);
+    }
+
+    .progress-warning {
+      background: linear-gradient(90deg, #f59e0b, #d97706);
+    }
+
+    .progress-over {
+      background: linear-gradient(90deg, #ef4444, #dc2626);
+    }
+
+    .category-detail {
+      background: rgba(255, 255, 255, 0.03);
+      padding: 16px;
+      margin: 8px 0;
+      border-radius: 12px;
+    }
+
+    .transaction-list {
+      margin-top: 12px;
+    }
+
+    .transaction-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.9rem;
+    }
+
+    .transaction-item:last-child {
+      border-bottom: none;
+    }
+
+    .transaction-desc {
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .transaction-amt {
+      font-weight: 600;
+    }
+
+    .chart-container {
+      margin-top: 40px;
+      padding: 24px;
+      border-radius: 20px;
+    }
+
+    .chart-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 16px;
+      height: 200px;
+      margin-top: 20px;
+    }
+
+    .chart-bar {
+      flex: 1;
+      background: rgba(99, 102, 241, 0.3);
+      border-radius: 8px 8px 0 0;
+      position: relative;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      min-height: 20px;
+    }
+
+    .chart-bar:hover {
+      background: rgba(99, 102, 241, 0.5);
+    }
+
+    .chart-bar-label {
+      position: absolute;
+      bottom: -30px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.6);
+      white-space: nowrap;
+    }
+
+    .chart-bar-value {
+      position: absolute;
+      top: -25px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: white;
+    }
+
     @media (max-width: 768px) {
       .form-grid {
         grid-template-columns: 1fr;
+      }
+
+      .quick-add-grid {
+        grid-template-columns: repeat(2, 1fr);
       }
 
       header h1 {
@@ -515,13 +734,17 @@
       }
 
       .export-controls {
-        flex-direction: column;
+        grid-template-columns: 1fr;
       }
 
-      .settings-btn {
+      .settings-btn, .undo-btn {
         top: 10px;
         right: 10px;
         padding: 10px 16px;
+      }
+
+      .undo-btn {
+        top: 60px;
       }
 
       table {
@@ -536,6 +759,7 @@
 </head>
 <body>
   <button class="settings-btn" onclick="openSettings()">⚙️ Settings</button>
+  <button class="undo-btn" id="undo-btn" onclick="undoLastExpense()">↶ Undo Last</button>
 
   <!-- Settings Modal -->
   <div class="modal" id="settings-modal">
@@ -574,20 +798,30 @@
 
       <div style="display: flex; gap: 12px; margin-top: 32px;">
         <button class="btn" onclick="saveBudget()">Save Budget</button>
+        <button class="btn btn-secondary" onclick="copyPreviousBudget()" style="flex: 0.7;">Copy Previous</button>
         <button class="btn btn-secondary" onclick="closeBudget()">Cancel</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Category Details Modal -->
+  <div class="modal" id="category-modal">
+    <div class="modal-content">
+      <h2 id="category-modal-title">Category Details</h2>
+      <div id="category-transactions-list"></div>
+      <button class="btn btn-secondary" onclick="closeCategoryModal()" style="margin-top: 20px;">Close</button>
     </div>
   </div>
 
   <div class="container">
     <header>
       <h1>💰 Expense Tracker</h1>
-      <p>Budget-based expense tracking</p>
+      <p>Smart budget-based expense tracking</p>
     </header>
 
     <div class="glass period-selector">
       <div class="period-info">
-        <div class="period-label" id="period-type-label">Current Pay Period</div>
+        <div class="period-label">Current Pay Period</div>
         <div class="period-dates" id="period-dates">Loading...</div>
       </div>
       <div class="period-controls">
@@ -621,21 +855,21 @@
 
     <div class="input-section glass">
       <div class="export-controls">
-        <button onclick="openBudget()" class="btn budget-btn">
-          📋 Manage Budget
-        </button>
-        <button onclick="exportData()" class="btn export-btn">
-          📥 Export
-        </button>
-        <button onclick="document.getElementById('import-file').click()" class="btn import-btn">
-          📤 Import
-        </button>
+        <button onclick="openBudget()" class="btn budget-btn">📋 Budget</button>
+        <button onclick="exportData()" class="btn export-btn">📥 Export</button>
+        <button onclick="document.getElementById('import-file').click()" class="btn import-btn">📤 Import</button>
+        <button onclick="clearAllExpenses()" class="btn btn-danger">🗑️ Clear All</button>
       </div>
       <input type="file" id="import-file" accept=".json" onchange="importData(event)" style="display: none;">
     </div>
 
     <div class="input-section glass">
-      <h2>Add Expense</h2>
+      <h2>Quick Add Common Expenses</h2>
+      <div class="quick-add-grid" id="quick-add-grid"></div>
+    </div>
+
+    <div class="input-section glass">
+      <h2>Add Custom Expense</h2>
       <form id="transaction-form">
         <div class="form-grid">
           <select id="category" required>
@@ -643,14 +877,22 @@
           </select>
           <input type="number" id="amount" placeholder="Amount" step="0.01" required>
         </div>
-        <input type="text" id="description" placeholder="Description (optional)" style="margin-bottom: 16px; width: 100%;">
+        <textarea id="description" placeholder="Notes/Description (optional)" rows="2" style="margin-bottom: 16px; width: 100%;"></textarea>
         <button type="submit" class="btn">Add Expense</button>
       </form>
     </div>
 
     <div class="transactions-section">
-      <h2>Budget Overview</h2>
+      <h2>
+        Budget Overview
+        <input type="text" id="search-box" class="search-box" placeholder="🔍 Search categories..." style="flex: 1; max-width: 300px; margin: 0; margin-left: 20px;" oninput="filterCategories()">
+      </h2>
       <div id="budget-table"></div>
+    </div>
+
+    <div class="glass chart-container">
+      <h2>Spending Trends (Last 5 Periods)</h2>
+      <div class="chart-bars" id="trend-chart"></div>
     </div>
   </div>
 
@@ -674,6 +916,8 @@
       { name: 'Fuel', budget: 40 }
     ];
     let currentPeriodOffset = 0;
+    let lastDeletedExpense = null;
+    let searchFilter = '';
 
     function openSettings() {
       document.getElementById('pay-frequency').value = settings.frequency;
@@ -724,6 +968,30 @@
       renderBudgetForm();
     }
 
+    function copyPreviousBudget() {
+      const currentPeriod = getPeriod(currentPeriodOffset);
+      const previousPeriod = getPeriod(currentPeriodOffset - 1);
+      
+      const prevExpenses = transactions.filter(t => {
+        const tDate = new Date(t.date);
+        tDate.setHours(0, 0, 0, 0);
+        return tDate >= previousPeriod.start && tDate <= previousPeriod.end;
+      });
+      
+      const categoryTotals = {};
+      prevExpenses.forEach(t => {
+        categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
+      });
+      
+      budgetCategories.forEach((cat, index) => {
+        if (categoryTotals[cat.name]) {
+          document.getElementById(`cat-budget-${index}`).value = Math.ceil(categoryTotals[cat.name]);
+        }
+      });
+      
+      alert('Previous period spending copied to budget fields!');
+    }
+
     function saveBudget() {
       budgetCategories = budgetCategories.map((cat, index) => ({
         name: document.getElementById(`cat-name-${index}`).value || `Category ${index + 1}`,
@@ -732,6 +1000,7 @@
       
       localStorage.setItem('budgetCategories', JSON.stringify(budgetCategories));
       updateCategoryDropdown();
+      updateQuickAddButtons();
       updateDisplay();
       closeBudget();
     }
@@ -740,6 +1009,36 @@
       const select = document.getElementById('category');
       select.innerHTML = '<option value="">Select Category</option>' + 
         budgetCategories.map(cat => `<option value="${cat.name}">${cat.name}</option>`).join('');
+    }
+
+    function updateQuickAddButtons() {
+      const grid = document.getElementById('quick-add-grid');
+      const topCategories = budgetCategories.filter(cat => cat.budget > 0).slice(0, 6);
+      
+      grid.innerHTML = topCategories.map(cat => `
+        <button class="quick-add-btn" onclick="quickAddExpense('${cat.name}', ${cat.budget})">
+          <div>${cat.name}</div>
+          <div class="amount">$${cat.budget}</div>
+        </button>
+      `).join('');
+    }
+
+    function quickAddExpense(category, suggestedAmount) {
+      const amount = prompt(`Add expense for ${category}:`, suggestedAmount);
+      if (amount && !isNaN(amount)) {
+        const transaction = {
+          id: Date.now(),
+          category,
+          amount: parseFloat(amount),
+          description: `Quick add: ${category}`,
+          date: new Date().toISOString()
+        };
+        transactions.push(transaction);
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+        lastDeletedExpense = transaction;
+        showUndoButton();
+        updateDisplay();
+      }
     }
 
     function getPeriod(offset = 0) {
@@ -815,6 +1114,19 @@
       document.getElementById('savings').textContent = `$${savings.toFixed(2)}`;
       
       renderBudgetTable(period, periodExpenses, salary);
+      renderTrendChart();
+    }
+
+    function filterCategories() {
+      searchFilter = document.getElementById('search-box').value.toLowerCase();
+      const period = getPeriod(currentPeriodOffset);
+      const periodExpenses = transactions.filter(t => {
+        const tDate = new Date(t.date);
+        tDate.setHours(0, 0, 0, 0);
+        return tDate >= period.start && tDate <= period.end;
+      });
+      const salary = salaries[period.key] || 0;
+      renderBudgetTable(period, periodExpenses, salary);
     }
 
     function renderBudgetTable(period, periodExpenses, salary) {
@@ -824,14 +1136,41 @@
         categoryTotals[t.category] = (categoryTotals[t.category] || 0) + t.amount;
       });
       
-      const rows = budgetCategories.map(cat => {
+      let filteredCategories = budgetCategories;
+      if (searchFilter) {
+        filteredCategories = budgetCategories.filter(cat => 
+          cat.name.toLowerCase().includes(searchFilter)
+        );
+      }
+      
+      const rows = filteredCategories.map(cat => {
         const actual = categoryTotals[cat.name] || 0;
         const remaining = cat.budget - actual;
+        const percentage = cat.budget > 0 ? (actual / cat.budget) * 100 : 0;
+        
+        let statusClass = 'status-good';
+        let progressClass = 'progress-good';
+        if (percentage >= 100) {
+          statusClass = 'status-over';
+          progressClass = 'progress-over';
+        } else if (percentage >= 75) {
+          statusClass = 'status-warning';
+          progressClass = 'progress-warning';
+        }
+        
         const remainingClass = remaining > 0 ? 'remaining-positive' : (remaining < 0 ? 'remaining-negative' : 'remaining-zero');
         
         return `
-          <tr>
-            <td class="category-name">${cat.name}</td>
+          <tr onclick="showCategoryDetails('${cat.name}', ${cat.budget}, ${actual})">
+            <td>
+              <div class="category-name">
+                <span class="status-indicator ${statusClass}"></span>
+                ${cat.name}
+              </div>
+              <div class="progress-bar-container">
+                <div class="progress-bar ${progressClass}" style="width: ${Math.min(percentage, 100)}%"></div>
+              </div>
+            </td>
             <td class="budget-amount">$${cat.budget.toFixed(2)}</td>
             <td class="actual-amount">$${actual.toFixed(2)}</td>
             <td class="${remainingClass}">$${remaining.toFixed(2)}</td>
@@ -874,31 +1213,166 @@
       document.getElementById('budget-table').innerHTML = tableHTML;
     }
 
+    function showCategoryDetails(categoryName, budget, actual) {
+      const period = getPeriod(currentPeriodOffset);
+      const categoryExpenses = transactions.filter(t => {
+        const tDate = new Date(t.date);
+        tDate.setHours(0, 0, 0, 0);
+        return t.category === categoryName && tDate >= period.start && tDate <= period.end;
+      });
+      
+      document.getElementById('category-modal-title').textContent = `${categoryName} - Details`;
+      
+      const transactionsList = categoryExpenses.length > 0 ? 
+        categoryExpenses.map(t => `
+          <div class="transaction-item">
+            <div>
+              <div class="transaction-desc">${t.description || 'No description'}</div>
+              <div style="font-size: 0.8rem; color: rgba(255,255,255,0.5);">${new Date(t.date).toLocaleDateString()}</div>
+            </div>
+            <div class="transaction-amt">$${t.amount.toFixed(2)}</div>
+          </div>
+        `).join('') :
+        '<p style="color: rgba(255,255,255,0.5); padding: 20px; text-align: center;">No expenses in this category yet</p>';
+      
+      const percentage = budget > 0 ? ((actual / budget) * 100).toFixed(1) : 0;
+      
+      document.getElementById('category-transactions-list').innerHTML = `
+        <div class="category-detail">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 16px;">
+            <div>
+              <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">Budget</div>
+              <div style="font-size: 1.5rem; font-weight: 700;">$${budget.toFixed(2)}</div>
+            </div>
+            <div>
+              <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">Spent</div>
+              <div style="font-size: 1.5rem; font-weight: 700;">$${actual.toFixed(2)}</div>
+            </div>
+            <div>
+              <div style="font-size: 0.9rem; color: rgba(255,255,255,0.6);">Usage</div>
+              <div style="font-size: 1.5rem; font-weight: 700;">${percentage}%</div>
+            </div>
+          </div>
+          <div class="transaction-list">
+            <h3 style="margin-bottom: 12px; font-size: 1.1rem;">Transactions (${categoryExpenses.length})</h3>
+            ${transactionsList}
+          </div>
+        </div>
+      `;
+      
+      document.getElementById('category-modal').classList.add('active');
+    }
+
+    function closeCategoryModal() {
+      document.getElementById('category-modal').classList.remove('active');
+    }
+
+    function renderTrendChart() {
+      const periods = [];
+      for (let i = -4; i <= 0; i++) {
+        periods.push(getPeriod(i));
+      }
+      
+      const maxSpending = Math.max(...periods.map(p => {
+        const expenses = transactions.filter(t => {
+          const tDate = new Date(t.date);
+          tDate.setHours(0, 0, 0, 0);
+          return tDate >= p.start && tDate <= p.end;
+        });
+        return expenses.reduce((sum, t) => sum + t.amount, 0);
+      }), 100);
+      
+      const bars = periods.map((p, index) => {
+        const expenses = transactions.filter(t => {
+          const tDate = new Date(t.date);
+          tDate.setHours(0, 0, 0, 0);
+          return tDate >= p.start && tDate <= p.end;
+        });
+        const total = expenses.reduce((sum, t) => sum + t.amount, 0);
+        const height = (total / maxSpending) * 100;
+        
+        return `
+          <div class="chart-bar" style="height: ${height}%">
+            <div class="chart-bar-value">$${total.toFixed(0)}</div>
+            <div class="chart-bar-label">${formatDate(p.start).split(',')[0]}</div>
+          </div>
+        `;
+      }).join('');
+      
+      document.getElementById('trend-chart').innerHTML = bars;
+    }
+
     function addTransaction(e) {
       e.preventDefault();
 
       const category = document.getElementById('category').value;
       const amount = parseFloat(document.getElementById('amount').value);
       const description = document.getElementById('description').value;
-      
-      const period = getPeriod(currentPeriodOffset);
 
       const transaction = {
         id: Date.now(),
         category,
         amount,
-        description,
+        description: description || `${category} expense`,
         date: new Date().toISOString()
       };
 
       transactions.push(transaction);
       localStorage.setItem('transactions', JSON.stringify(transactions));
+      lastDeletedExpense = transaction;
+      showUndoButton();
 
       document.getElementById('category').value = '';
       document.getElementById('amount').value = '';
       document.getElementById('description').value = '';
       
       updateDisplay();
+    }
+
+    function showUndoButton() {
+      const btn = document.getElementById('undo-btn');
+      btn.style.display = 'block';
+      setTimeout(() => {
+        btn.style.display = 'none';
+      }, 10000);
+    }
+
+    function undoLastExpense() {
+      if (lastDeletedExpense) {
+        const index = transactions.findIndex(t => t.id === lastDeletedExpense.id);
+        if (index > -1) {
+          transactions.splice(index, 1);
+          localStorage.setItem('transactions', JSON.stringify(transactions));
+          lastDeletedExpense = null;
+          document.getElementById('undo-btn').style.display = 'none';
+          updateDisplay();
+        }
+      }
+    }
+
+    function clearAllExpenses() {
+      const period = getPeriod(currentPeriodOffset);
+      const periodExpenses = transactions.filter(t => {
+        const tDate = new Date(t.date);
+        tDate.setHours(0, 0, 0, 0);
+        return tDate >= period.start && tDate <= period.end;
+      });
+      
+      if (periodExpenses.length === 0) {
+        alert('No expenses to clear for this period!');
+        return;
+      }
+      
+      if (confirm(`Clear all ${periodExpenses.length} expenses for this period? This cannot be undone.`)) {
+        transactions = transactions.filter(t => {
+          const tDate = new Date(t.date);
+          tDate.setHours(0, 0, 0, 0);
+          return tDate < period.start || tDate > period.end;
+        });
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+        updateDisplay();
+        alert('All expenses cleared!');
+      }
     }
 
     function exportData() {
@@ -938,6 +1412,7 @@
             localStorage.setItem('budgetCategories', JSON.stringify(budgetCategories));
             currentPeriodOffset = 0;
             updateCategoryDropdown();
+            updateQuickAddButtons();
             updateDisplay();
             alert('Data imported successfully!');
           }
@@ -952,6 +1427,7 @@
 
     // Initialize
     updateCategoryDropdown();
+    updateQuickAddButtons();
     updateDisplay();
   </script>
 </body>
