@@ -120,6 +120,12 @@
       font-weight: 500;
     }
 
+    .helper-text {
+      font-size: 0.8rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 4px;
+    }
+
     .period-selector {
       border-radius: 20px;
       padding: 24px;
@@ -471,9 +477,16 @@
         </select>
       </div>
 
-      <div class="form-group" id="start-date-group">
-        <label id="start-date-label">Next Pay Date</label>
+      <div class="form-group" id="biweekly-group">
+        <label>Next Pay Date (Start of Pay Period)</label>
         <input type="date" id="pay-start-date">
+        <div class="helper-text">Select the date your next paycheck arrives (e.g., Jan 7, 2025)</div>
+      </div>
+
+      <div class="form-group" id="monthly-group" style="display: none;">
+        <label>Pay Day of Month</label>
+        <input type="number" id="pay-day" min="1" max="31" placeholder="15">
+        <div class="helper-text">Enter the day you get paid each month (e.g., 15 for the 15th)</div>
       </div>
 
       <div style="display: flex; gap: 12px; margin-top: 32px;">
@@ -548,6 +561,7 @@
             <option value="Other">Other</option>
           </select>
         </div>
+        <input type="date" id="expense-date" style="margin-bottom: 16px; width: 100%;">
         <button type="submit" class="btn">Add Expense</button>
       </form>
     </div>
@@ -563,13 +577,15 @@
     let salaries = JSON.parse(localStorage.getItem('salaries')) || {};
     let settings = JSON.parse(localStorage.getItem('paySettings')) || {
       frequency: 'biweekly',
-      startDate: '2025-01-07'
+      startDate: '2025-01-07',
+      monthlyDay: 15
     };
     let currentPeriodOffset = 0;
 
     function openSettings() {
       document.getElementById('pay-frequency').value = settings.frequency;
       document.getElementById('pay-start-date').value = settings.startDate;
+      document.getElementById('pay-day').value = settings.monthlyDay || 15;
       updateFrequencySettings();
       document.getElementById('settings-modal').classList.add('active');
     }
@@ -580,18 +596,24 @@
 
     function updateFrequencySettings() {
       const frequency = document.getElementById('pay-frequency').value;
-      const label = document.getElementById('start-date-label');
       
       if (frequency === 'biweekly') {
-        label.textContent = 'Next Pay Date (Start of Period)';
+        document.getElementById('biweekly-group').style.display = 'block';
+        document.getElementById('monthly-group').style.display = 'none';
       } else {
-        label.textContent = 'Pay Day of Month (e.g., 1st, 15th)';
+        document.getElementById('biweekly-group').style.display = 'none';
+        document.getElementById('monthly-group').style.display = 'block';
       }
     }
 
     function saveSettings() {
       settings.frequency = document.getElementById('pay-frequency').value;
-      settings.startDate = document.getElementById('pay-start-date').value;
+      
+      if (settings.frequency === 'biweekly') {
+        settings.startDate = document.getElementById('pay-start-date').value;
+      } else {
+        settings.monthlyDay = parseInt(document.getElementById('pay-day').value);
+      }
       
       localStorage.setItem('paySettings', JSON.stringify(settings));
       closeSettings();
@@ -601,44 +623,57 @@
 
     function getPeriod(offset = 0) {
       const today = new Date();
+      today.setHours(0, 0, 0, 0);
       
       if (settings.frequency === 'biweekly') {
         const startDate = new Date(settings.startDate);
-        const daysSinceStart = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-        const currentPeriodNum = Math.floor(daysSinceStart / 14);
+        startDate.setHours(0, 0, 0, 0);
         
+        // Calculate which period we're currently in
+        const daysDiff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+        const currentPeriodNum = Math.floor(daysDiff / 14);
+        
+        // Apply offset
         const targetPeriod = currentPeriodNum + offset;
+        
+        // Calculate period start and end
         const periodStart = new Date(startDate);
         periodStart.setDate(periodStart.getDate() + (targetPeriod * 14));
         
         const periodEnd = new Date(periodStart);
         periodEnd.setDate(periodEnd.getDate() + 13);
+        periodEnd.setHours(23, 59, 59, 999);
         
         return {
           start: periodStart,
           end: periodEnd,
-          key: `${periodStart.getFullYear()}-${String(periodStart.getMonth() + 1).padStart(2, '0')}-${String(periodStart.getDate()).padStart(2, '0')}`
+          key: `biweekly-${periodStart.getFullYear()}-${String(periodStart.getMonth() + 1).padStart(2, '0')}-${String(periodStart.getDate()).padStart(2, '0')}`
         };
       } else {
         // Monthly
-        const payDay = parseInt(settings.startDate);
+        const payDay = settings.monthlyDay || 15;
         let periodStart, periodEnd;
         
+        // Determine current period
         if (today.getDate() >= payDay) {
+          // We're in the period that started on payDay of this month
           periodStart = new Date(today.getFullYear(), today.getMonth(), payDay);
           periodEnd = new Date(today.getFullYear(), today.getMonth() + 1, payDay - 1);
         } else {
+          // We're in the period that started on payDay of last month
           periodStart = new Date(today.getFullYear(), today.getMonth() - 1, payDay);
           periodEnd = new Date(today.getFullYear(), today.getMonth(), payDay - 1);
         }
         
+        // Apply offset
         periodStart.setMonth(periodStart.getMonth() + offset);
         periodEnd.setMonth(periodEnd.getMonth() + offset);
+        periodEnd.setHours(23, 59, 59, 999);
         
         return {
           start: periodStart,
           end: periodEnd,
-          key: `${periodStart.getFullYear()}-${String(periodStart.getMonth() + 1).padStart(2, '0')}`
+          key: `monthly-${periodStart.getFullYear()}-${String(periodStart.getMonth() + 1).padStart(2, '0')}`
         };
       }
     }
@@ -654,6 +689,22 @@
         currentPeriodOffset += offset;
       }
       updateDisplay();
+      setDefaultExpenseDate();
+    }
+
+    function setDefaultExpenseDate() {
+      // Set expense date to today, but clamp to current viewed period
+      const period = getPeriod(currentPeriodOffset);
+      const today = new Date();
+      
+      let defaultDate;
+      if (today >= period.start && today <= period.end) {
+        defaultDate = today;
+      } else {
+        defaultDate = period.start;
+      }
+      
+      document.getElementById('expense-date').value = defaultDate.toISOString().split('T')[0];
     }
 
     function editSalary() {
@@ -674,7 +725,7 @@
       
       // Update labels
       const typeLabel = settings.frequency === 'biweekly' ? 'Bi-Weekly' : 'Monthly';
-      document.getElementById('period-type-label').textContent = `Current Pay Period (${typeLabel})`;
+      document.getElementById('period-type-label').textContent = `Pay Period (${typeLabel})`;
       document.getElementById('salary-label').textContent = `${typeLabel} Salary`;
       
       document.getElementById('period-dates').textContent = 
@@ -685,6 +736,7 @@
       const periodExpenses = transactions
         .filter(t => {
           const tDate = new Date(t.date);
+          tDate.setHours(0, 0, 0, 0);
           return tDate >= period.start && tDate <= period.end;
         })
         .reduce((sum, t) => sum + t.amount, 0);
@@ -701,6 +753,7 @@
     function renderTransactions(period) {
       const periodTransactions = transactions.filter(t => {
         const tDate = new Date(t.date);
+        tDate.setHours(0, 0, 0, 0);
         return tDate >= period.start && tDate <= period.end;
       });
 
@@ -717,7 +770,7 @@
       }
 
       document.getElementById('transactions-list').innerHTML = periodTransactions
-        .map((transaction, index) => {
+        .map((transaction) => {
           const actualIndex = transactions.indexOf(transaction);
           return `
             <div class="transaction-item glass">
@@ -742,26 +795,32 @@
       const description = document.getElementById('description').value;
       const amount = parseFloat(document.getElementById('amount').value);
       const category = document.getElementById('category').value;
+      const expenseDate = document.getElementById('expense-date').value;
 
       const transaction = {
         id: Date.now(),
         description,
         amount,
         category,
-        date: new Date().toISOString()
+        date: new Date(expenseDate).toISOString()
       };
 
       transactions.push(transaction);
       localStorage.setItem('transactions', JSON.stringify(transactions));
 
-      document.getElementById('transaction-form').reset();
+      document.getElementById('description').value = '';
+      document.getElementById('amount').value = '';
+      document.getElementById('category').value = '';
+      
       updateDisplay();
     }
 
     function deleteTransaction(index) {
-      transactions.splice(index, 1);
-      localStorage.setItem('transactions', JSON.stringify(transactions));
-      updateDisplay();
+      if (confirm('Delete this expense?')) {
+        transactions.splice(index, 1);
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+        updateDisplay();
+      }
     }
 
     function exportData() {
@@ -796,7 +855,9 @@
             localStorage.setItem('transactions', JSON.stringify(transactions));
             localStorage.setItem('salaries', JSON.stringify(salaries));
             localStorage.setItem('paySettings', JSON.stringify(settings));
+            currentPeriodOffset = 0;
             updateDisplay();
+            setDefaultExpenseDate();
             alert('Data imported successfully!');
           }
         } catch (error) {
@@ -810,6 +871,7 @@
 
     // Initialize
     updateDisplay();
+    setDefaultExpenseDate();
 
     // First time setup
     if (!localStorage.getItem('paySettings')) {
