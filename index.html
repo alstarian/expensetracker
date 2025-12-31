@@ -351,7 +351,6 @@
       font-weight: 600;
     }
 
-    /* Table Styles */
     .table-container {
       border-radius: 20px;
       overflow: hidden;
@@ -495,7 +494,6 @@
         padding: 10px 16px;
       }
 
-      /* Responsive table */
       table {
         font-size: 0.85rem;
       }
@@ -537,7 +535,7 @@
       <div class="form-group" id="biweekly-group">
         <label>Your Next Pay Date</label>
         <input type="date" id="pay-start-date">
-        <div class="helper-text">Select your next payday (e.g., Jan 7, 2025). The app will calculate all future periods from this date.</div>
+        <div class="helper-text">Select your next payday (e.g., Jan 7, 2026). The app will calculate all periods from this date.</div>
       </div>
 
       <div class="form-group" id="monthly-group" style="display: none;">
@@ -634,7 +632,7 @@
     let salaries = JSON.parse(localStorage.getItem('salaries')) || {};
     let settings = JSON.parse(localStorage.getItem('paySettings')) || {
       frequency: 'biweekly',
-      startDate: '2025-01-07',
+      startDate: '2026-01-07',
       monthlyDay: 15
     };
     let currentPeriodOffset = 0;
@@ -683,24 +681,23 @@
       today.setHours(0, 0, 0, 0);
       
       if (settings.frequency === 'biweekly') {
-        const startDate = new Date(settings.startDate);
-        startDate.setHours(0, 0, 0, 0);
+        const startDate = new Date(settings.startDate + 'T00:00:00');
         
-        let currentPeriodNum;
+        // Calculate the number of days between today and the start date
+        const millisDiff = today.getTime() - startDate.getTime();
+        const daysDiff = Math.floor(millisDiff / (1000 * 60 * 60 * 24));
         
-        if (today >= startDate) {
-          const daysDiff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
-          currentPeriodNum = Math.floor(daysDiff / 14);
-        } else {
-          const daysDiff = Math.ceil((today - startDate) / (1000 * 60 * 60 * 24));
-          currentPeriodNum = Math.floor(daysDiff / 14);
-        }
+        // Determine which period number we're in (can be negative if before start date)
+        const currentPeriodNum = Math.floor(daysDiff / 14);
         
+        // Apply the offset
         const targetPeriod = currentPeriodNum + offset;
         
+        // Calculate the period start date
         const periodStart = new Date(startDate);
         periodStart.setDate(periodStart.getDate() + (targetPeriod * 14));
         
+        // Calculate the period end date (13 days later = 14 day period)
         const periodEnd = new Date(periodStart);
         periodEnd.setDate(periodEnd.getDate() + 13);
         periodEnd.setHours(23, 59, 59, 999);
@@ -711,6 +708,7 @@
           key: `biweekly-${periodStart.getFullYear()}-${String(periodStart.getMonth() + 1).padStart(2, '0')}-${String(periodStart.getDate()).padStart(2, '0')}`
         };
       } else {
+        // Monthly calculation
         const payDay = settings.monthlyDay || 15;
         let periodStart, periodEnd;
         
@@ -759,7 +757,10 @@
         defaultDate = period.start;
       }
       
-      document.getElementById('expense-date').value = defaultDate.toISOString().split('T')[0];
+      const year = defaultDate.getFullYear();
+      const month = String(defaultDate.getMonth() + 1).padStart(2, '0');
+      const day = String(defaultDate.getDate()).padStart(2, '0');
+      document.getElementById('expense-date').value = `${year}-${month}-${day}`;
     }
 
     function editSalary() {
@@ -872,7 +873,7 @@
         description,
         amount,
         category,
-        date: new Date(expenseDate).toISOString()
+        date: new Date(expenseDate + 'T00:00:00').toISOString()
       };
 
       transactions.push(transaction);
@@ -946,7 +947,7 @@
     // First time setup
     if (!localStorage.getItem('paySettings')) {
       setTimeout(() => {
-        alert('Welcome! Your pay schedule is set to bi-weekly starting Jan 7, 2025. Click Settings (⚙️) to change it.');
+        alert('Welcome! Click Settings (⚙️) to configure your pay schedule.');
       }, 500);
     }
   </script>
