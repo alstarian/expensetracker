@@ -34,9 +34,17 @@
   background: linear-gradient(135deg, #000 0%, #1a1a1a 100%);
   display: flex; align-items: center; justify-content: center; z-index: 10000;
 }
+#lock-screen::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+  background-image: radial-gradient(at 0% 0%, rgba(30,64,175,0.15) 0px, transparent 50%),
+                    radial-gradient(at 100% 0%, rgba(139,92,246,0.15) 0px, transparent 50%),
+                    radial-gradient(at 100% 100%, rgba(16,185,129,0.1) 0px, transparent 50%);
+  pointer-events: none;
+}
 .lock-container {
-  text-align: center; padding: 40px; background: rgba(0,0,0,0.5);
-  border-radius: 24px; backdrop-filter: blur(20px); border: 1px solid rgba(255,255,255,0.1);
+  position: relative; z-index: 1; text-align: center; padding: 40px;
+  background: rgba(0,0,0,0.5); border-radius: 24px; backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.1);
 }
 .lock-header { margin-bottom: 20px; }
 .unlock-forgot-btn {
@@ -87,21 +95,15 @@
   40% { opacity: 1; transform: translateY(-50%) scale(1.3); }
   100% { opacity: 0; transform: translateY(-50%) scale(0.5); }
 }
-.pane {
-  position: relative; overflow: visible !important; touch-action: pan-y;
-  user-select: none; will-change: transform, opacity;
-}
+.pane { position: relative; overflow: visible !important; touch-action: pan-y; user-select: none; will-change: transform, opacity; }
 .pane::before, .pane::after {
-  position: absolute; top: 50%; transform: translateY(-50%);
-  font-size: 2.5rem; color: rgba(251,191,36,0.15); font-weight: 900;
-  pointer-events: none; z-index: 1; transition: all 0.3s;
+  position: absolute; top: 50%; transform: translateY(-50%); font-size: 2.5rem;
+  color: rgba(251,191,36,0.15); font-weight: 900; pointer-events: none; z-index: 1; transition: all 0.3s;
 }
 .pane::before { content: '‹'; left: 15px; }
 .pane::after { content: '›'; right: 15px; }
 @media (hover: hover) {
-  .pane:hover::before, .pane:hover::after {
-    color: rgba(251,191,36,0.35); text-shadow: 0 0 10px rgba(251,191,36,0.3);
-  }
+  .pane:hover::before, .pane:hover::after { color: rgba(251,191,36,0.35); text-shadow: 0 0 10px rgba(251,191,36,0.3); }
 }
 
 @media (max-width: 768px) {
@@ -153,7 +155,14 @@
 </div>
 </div>
 <div id="setup-wizard" class="modal setup-wizard"><div class="modal-content"><div class="modal-header"><div class="modal-title">Welcome! 👋</div></div><div class="wizard-icon">💰</div><p class="wizard-subtitle">Let's get you set up! When does your bi-weekly pay cycle start? This helps us track your expenses accurately across pay periods.</p><div class="quick-dates" id="quick-dates"></div><div class="divider">OR CHOOSE A DATE</div><div class="input-group"><label class="input-label">Custom Start Date</label><input type="date" id="setup-start-date" max="2099-12-31"></div><div class="modal-buttons"><button class="modal-btn save" onclick="completeSetup()">Get Started! 🚀</button></div><p style="margin-top:20px;font-size:.85rem;color:rgba(255,255,255,.5)">💡 Tip: Choose the first day of any recent pay period.</p></div></div>
-<div id="settings-modal" class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">Settings ⚙️</div><button class="close-btn" onclick="closeSettings()">✕</button></div><div class="settings-info"><div class="settings-info-title">Current Pay Cycle Start</div><div class="settings-info-value" id="current-start-date">Loading...</div></div><div class="input-group"><label class="input-label">Update Pay Cycle Start Date</label><input type="date" id="settings-start-date" max="2099-12-31"></div><div class="warning-box"><p>⚠️ <strong>Important:</strong> Changing your pay cycle start date will recalculate all periods.</p></div><div class="modal-buttons"><button class="modal-btn cancel" onclick="closeSettings()">Cancel</button><button class="modal-btn save" onclick="saveSettings()">Save Changes</button></div></div></div>
+<div id="settings-modal" class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">Settings ⚙️</div><button class="close-btn" onclick="closeSettings()">✕</button></div><div class="settings-info"><div class="settings-info-title">Current Pay Cycle Start</div><div class="settings-info-value" id="current-start-date">Loading...</div></div><div class="input-group"><label class="input-label">Update Pay Cycle Start Date</label><input type="date" id="settings-start-date" max="2099-12-31"></div><div class="warning-box"><p>⚠️ <strong>Important:</strong> Changing your pay cycle start date will recalculate all periods.</p></div><div style="margin-top:30px; padding-top:20px; border-top:1px solid rgba(255,255,255,0.1)">
+  <div class="settings-info" style="background:rgba(251,191,36,0.1); border-color:rgba(251,191,36,0.3)">
+    <div class="settings-info-title">🔐 Security</div>
+    <p style="font-size:0.9rem; color:rgba(255,255,255,0.7); margin-top:8px">Manage your passcode and security settings</p>
+  </div>
+  <button class="sync-btn settings" style="width:100%; justify-content:center; margin-top:12px" onclick="showChangePasscode()">🔐 Change Passcode</button>
+</div>
+<div class="modal-buttons"><button class="modal-btn cancel" onclick="closeSettings()">Cancel</button><button class="modal-btn save" onclick="saveSettings()">Save Changes</button></div></div></div>
 <div id="edit-modal" class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">Edit Expense</div><button class="close-btn" onclick="closeEditModal()">✕</button></div><div class="input-group"><label class="input-label">Category</label><input type="text" id="edit-category" placeholder="e.g., Groceries"></div><div class="input-group"><label class="input-label">Amount</label><input type="number" id="edit-amount" placeholder="0.00" step="0.01"></div><div class="modal-buttons"><button class="modal-btn cancel" onclick="closeEditModal()">Cancel</button><button class="modal-btn save" onclick="saveEdit()">Save Changes</button></div></div></div>
 <div id="analytics-modal" class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">Utility Analytics</div><button class="close-btn" onclick="closeAnalytics()">✕</button></div><div id="analytics-body"></div></div></div>
 <div id="insights-modal" class="modal"><div class="modal-content insights-content"><div class="modal-header"><div class="modal-title">Spending Insights 📈</div><button class="close-btn" onclick="closeInsights()">✕</button></div><div id="insights-body" class="insights-body"></div></div></div>
@@ -165,7 +174,7 @@ let authSettings = {
   passcodeHash: null,
   securityQuestions: null,
   recoveryKeyHash: null,
-  lockTimeout: 60000, // 1 minute
+  lockTimeout: 60000,
   isLocked: true
 };
 let lastActivityTime = Date.now();
@@ -289,17 +298,17 @@ function attemptUnlock() {
     authSettings.isLocked = false;
     document.getElementById('lock-screen').style.display = 'none';
     document.body.style.overflow = 'auto';
-    document.querySelectorAll('.passcode-digit').forEach(input => input.value = '');
+    document.querySelectorAll('#lock-screen .passcode-digit').forEach(input => input.value = '');
     document.getElementById('passcode-error').style.display = 'none';
     resetActivityTimer();
     if (navigator.vibrate) navigator.vibrate(50);
   } else {
     document.getElementById('passcode-error').style.display = 'block';
     if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
-    const lockScreen = document.getElementById('lock-screen');
-    lockScreen.classList.add('shake-error');
-    setTimeout(() => lockScreen.classList.remove('shake-error'), 500);
-    document.querySelectorAll('.passcode-digit').forEach(input => input.value = '');
+    const lockContainer = document.querySelector('.lock-container');
+    lockContainer.classList.add('shake-error');
+    setTimeout(() => lockContainer.classList.remove('shake-error'), 500);
+    document.querySelectorAll('#lock-screen .passcode-digit').forEach(input => input.value = '');
     document.getElementById('unlock-1').focus();
   }
 }
@@ -309,6 +318,8 @@ function lockApp() {
   authSettings.isLocked = true;
   document.getElementById('lock-screen').style.display = 'flex';
   document.body.style.overflow = 'hidden';
+  document.querySelectorAll('#lock-screen .passcode-digit').forEach(input => input.value = '');
+  document.getElementById('passcode-error').style.display = 'none';
   setTimeout(() => document.getElementById('unlock-1').focus(), 300);
 }
 
@@ -324,6 +335,7 @@ function trackActivity() {
   if (!authSettings.isLocked) resetActivityTimer();
 }
 
+// FIX: Forgot Password - Works immediately from lock screen
 function showRecoveryOptions() {
   document.getElementById('recovery-options-modal').classList.add('active');
 }
@@ -394,6 +406,86 @@ function confirmDataReset() {
       location.reload();
     }
   }
+}
+
+// Change Passcode Feature
+function showChangePasscode() {
+  for (let i = 1; i <= 6; i++) {
+    document.getElementById(`change-old-${i}`).value = '';
+    document.getElementById(`change-new-${i}`).value = '';
+    document.getElementById(`change-confirm-${i}`).value = '';
+  }
+  document.getElementById('change-passcode-error').style.display = 'none';
+  document.getElementById('settings-modal').classList.remove('active');
+  document.getElementById('change-passcode-modal').classList.add('active');
+  setTimeout(() => document.getElementById('change-old-1').focus(), 300);
+}
+
+function closeChangePasscode() {
+  document.getElementById('change-passcode-modal').classList.remove('active');
+  for (let i = 1; i <= 6; i++) {
+    document.getElementById(`change-old-${i}`).value = '';
+    document.getElementById(`change-new-${i}`).value = '';
+    document.getElementById(`change-confirm-${i}`).value = '';
+  }
+  document.getElementById('change-passcode-error').style.display = 'none';
+}
+
+function saveNewPasscode() {
+  let oldPasscode = '', newPasscode = '', confirmPasscode = '';
+  for (let i = 1; i <= 6; i++) {
+    oldPasscode += document.getElementById(`change-old-${i}`).value;
+    newPasscode += document.getElementById(`change-new-${i}`).value;
+    confirmPasscode += document.getElementById(`change-confirm-${i}`).value;
+  }
+  const errorDiv = document.getElementById('change-passcode-error');
+  if (oldPasscode.length !== 6 || !/^\d{6}$/.test(oldPasscode)) {
+    errorDiv.textContent = '❌ Please enter your current 6-digit passcode';
+    errorDiv.style.display = 'block';
+    return;
+  }
+  if (newPasscode.length !== 6 || !/^\d{6}$/.test(newPasscode)) {
+    errorDiv.textContent = '❌ New passcode must be 6 digits';
+    errorDiv.style.display = 'block';
+    return;
+  }
+  if (confirmPasscode.length !== 6 || !/^\d{6}$/.test(confirmPasscode)) {
+    errorDiv.textContent = '❌ Please confirm your new passcode';
+    errorDiv.style.display = 'block';
+    return;
+  }
+  if (hashCode(oldPasscode) !== authSettings.passcodeHash) {
+    errorDiv.textContent = '❌ Current passcode is incorrect';
+    errorDiv.style.display = 'block';
+    const modal = document.getElementById('change-passcode-modal');
+    modal.classList.add('shake-error');
+    setTimeout(() => modal.classList.remove('shake-error'), 500);
+    for (let i = 1; i <= 6; i++) document.getElementById(`change-old-${i}`).value = '';
+    document.getElementById('change-old-1').focus();
+    if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+    return;
+  }
+  if (newPasscode !== confirmPasscode) {
+    errorDiv.textContent = '❌ New passcodes do not match';
+    errorDiv.style.display = 'block';
+    for (let i = 1; i <= 6; i++) {
+      document.getElementById(`change-new-${i}`).value = '';
+      document.getElementById(`change-confirm-${i}`).value = '';
+    }
+    document.getElementById('change-new-1').focus();
+    return;
+  }
+  if (oldPasscode === newPasscode) {
+    errorDiv.textContent = '❌ New passcode must be different';
+    errorDiv.style.display = 'block';
+    return;
+  }
+  authSettings.passcodeHash = hashCode(newPasscode);
+  authSettings.lastPasswordChange = new Date().toISOString();
+  localStorage.setItem('authSettings', JSON.stringify(authSettings));
+  closeChangePasscode();
+  alert('✅ Passcode changed successfully!\n\nYour security questions and recovery key remain the same.');
+  if (navigator.vibrate) navigator.vibrate(50);
 }
 
 function checkAuthSetup() {
@@ -531,7 +623,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 <!-- ==================== AUTHENTICATION SYSTEM ==================== -->
 
-<!-- Passcode Setup -->
+<!-- Passcode Setup Modal -->
 <div id="passcode-setup-modal" class="modal auth-modal">
   <div class="modal-content auth-content">
     <div class="modal-header"><div class="modal-title">🔐 Secure Your App</div></div>
@@ -552,7 +644,7 @@ window.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
-<!-- Security Questions -->
+<!-- Security Questions Setup -->
 <div id="security-questions-modal" class="modal auth-modal">
   <div class="modal-content auth-content">
     <div class="modal-header"><div class="modal-title">🛡️ Set Recovery Options</div></div>
@@ -637,7 +729,7 @@ window.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
-<!-- Recovery Options -->
+<!-- Recovery Options Modal -->
 <div id="recovery-options-modal" class="modal auth-modal">
   <div class="modal-content auth-content">
     <div class="modal-header">
@@ -709,6 +801,55 @@ window.addEventListener('DOMContentLoaded', () => {
     <div class="modal-buttons">
       <button class="modal-btn cancel" onclick="closeRecoveryKeyInput()">Cancel</button>
       <button class="modal-btn save" onclick="verifyRecoveryKey()">Unlock App</button>
+    </div>
+  </div>
+</div>
+
+<!-- Change Passcode Modal -->
+<div id="change-passcode-modal" class="modal auth-modal">
+  <div class="modal-content auth-content">
+    <div class="modal-header">
+      <div class="modal-title">🔐 Change Passcode</div>
+      <button class="close-btn" onclick="closeChangePasscode()">✕</button>
+    </div>
+    <p class="auth-subtitle">Enter your current passcode, then create a new one</p>
+    <div style="margin-bottom:30px">
+      <label class="input-label">Current Passcode</label>
+      <div class="passcode-input-group">
+        <input type="password" id="change-old-1" maxlength="1" class="passcode-digit" inputmode="numeric">
+        <input type="password" id="change-old-2" maxlength="1" class="passcode-digit" inputmode="numeric">
+        <input type="password" id="change-old-3" maxlength="1" class="passcode-digit" inputmode="numeric">
+        <input type="password" id="change-old-4" maxlength="1" class="passcode-digit" inputmode="numeric">
+        <input type="password" id="change-old-5" maxlength="1" class="passcode-digit" inputmode="numeric">
+        <input type="password" id="change-old-6" maxlength="1" class="passcode-digit" inputmode="numeric">
+      </div>
+    </div>
+    <div style="margin-bottom:30px">
+      <label class="input-label">New Passcode</label>
+      <div class="passcode-input-group">
+        <input type="password" id="change-new-1" maxlength="1" class="passcode-digit" inputmode="numeric">
+        <input type="password" id="change-new-2" maxlength="1" class="passcode-digit" inputmode="numeric">
+        <input type="password" id="change-new-3" maxlength="1" class="passcode-digit" inputmode="numeric">
+        <input type="password" id="change-new-4" maxlength="1" class="passcode-digit" inputmode="numeric">
+        <input type="password" id="change-new-5" maxlength="1" class="passcode-digit" inputmode="numeric">
+        <input type="password" id="change-new-6" maxlength="1" class="passcode-digit" inputmode="numeric">
+      </div>
+    </div>
+    <div style="margin-bottom:30px">
+      <label class="input-label">Confirm New Passcode</label>
+      <div class="passcode-input-group">
+        <input type="password" id="change-confirm-1" maxlength="1" class="passcode-digit" inputmode="numeric">
+        <input type="password" id="change-confirm-2" maxlength="1" class="passcode-digit" inputmode="numeric">
+        <input type="password" id="change-confirm-3" maxlength="1" class="passcode-digit" inputmode="numeric">
+        <input type="password" id="change-confirm-4" maxlength="1" class="passcode-digit" inputmode="numeric">
+        <input type="password" id="change-confirm-5" maxlength="1" class="passcode-digit" inputmode="numeric">
+        <input type="password" id="change-confirm-6" maxlength="1" class="passcode-digit" inputmode="numeric">
+      </div>
+    </div>
+    <div id="change-passcode-error" style="display:none; color:#ef4444; margin-bottom:20px; font-weight:600"></div>
+    <div class="modal-buttons">
+      <button class="modal-btn cancel" onclick="closeChangePasscode()">Cancel</button>
+      <button class="modal-btn save" onclick="saveNewPasscode()">Change Passcode</button>
     </div>
   </div>
 </div>
