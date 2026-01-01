@@ -1292,7 +1292,8 @@
         return;
       }
       const modal = document.getElementById('settings-modal');
-      const dateObj = new Date(settings.startDate);
+      // TIMEZONE FIX: Parse as local time
+      const dateObj = new Date(settings.startDate + 'T00:00:00');
       document.getElementById('current-start-date').textContent = dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
       document.getElementById('settings-start-date').value = settings.startDate;
       modal.classList.add('active');
@@ -1419,7 +1420,7 @@
     }
 
     function exportData() {
-      const data = { transactions, salaries, utilities, settings, exportDate: new Date().toISOString(), version: '2.3' };
+      const data = { transactions, salaries, utilities, settings, exportDate: new Date().toISOString(), version: '2.4' };
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -1469,26 +1470,33 @@
       updatePeriodDisplay();
     }
 
+    // TIMEZONE FIX: Parse dates as local time by adding T00:00:00
     function getPeriod(offset = 0) {
       try {
         if (!settings || !settings.startDate) return null;
         const today = new Date();
         today.setHours(0, 0, 0, 0);
-        const startDate = new Date(settings.startDate);
+
+        // TIMEZONE FIX: Add T00:00:00 to force local time parsing
+        const startDate = new Date(settings.startDate + 'T00:00:00');
         if (isNaN(startDate.getTime())) {
           alert('Invalid start date. Reset app.');
           return null;
         }
         startDate.setHours(0, 0, 0, 0);
+
         const millisDiff = today.getTime() - startDate.getTime();
         const daysDiff = Math.floor(millisDiff / (1000 * 60 * 60 * 24));
         const currentPeriodNum = Math.floor(daysDiff / 14);
         const targetPeriod = currentPeriodNum + offset;
+
         const periodStart = new Date(startDate);
         periodStart.setDate(periodStart.getDate() + (targetPeriod * 14));
+
         const periodEnd = new Date(periodStart);
         periodEnd.setDate(periodEnd.getDate() + 13);
         periodEnd.setHours(23, 59, 59, 999);
+
         return {
           start: periodStart,
           end: periodEnd,
@@ -1521,11 +1529,15 @@
       updateMonthlyDisplay();
     }
 
+    // TIMEZONE FIX: Add T00:00:00 to force local time parsing
     function calculateCarryForward(upToPeriodNum) {
       if (!settings || !settings.startDate) return 0;
       let cumulativeSavings = 0;
-      const startDate = new Date(settings.startDate);
+
+      // TIMEZONE FIX: Add T00:00:00 to force local time parsing
+      const startDate = new Date(settings.startDate + 'T00:00:00');
       startDate.setHours(0, 0, 0, 0);
+
       for (let i = 0; i < upToPeriodNum; i++) {
         const periodStart = new Date(startDate);
         periodStart.setDate(periodStart.getDate() + (i * 14));
