@@ -153,7 +153,27 @@
 </div>
 </div>
 <div id="setup-wizard" class="modal setup-wizard"><div class="modal-content"><div class="modal-header"><div class="modal-title">Welcome! 👋</div></div><div class="wizard-icon">💰</div><p class="wizard-subtitle">Let's get you set up! When does your bi-weekly pay cycle start? This helps us track your expenses accurately across pay periods.</p><div class="quick-dates" id="quick-dates"></div><div class="divider">OR CHOOSE A DATE</div><div class="input-group"><label class="input-label">Custom Start Date</label><input type="date" id="setup-start-date" max="2099-12-31"></div><div class="modal-buttons"><button class="modal-btn save" onclick="completeSetup()">Get Started! 🚀</button></div><p style="margin-top:20px;font-size:.85rem;color:rgba(255,255,255,.5)">💡 Tip: Choose the first day of any recent pay period.</p></div></div>
-<div id="settings-modal" class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">Settings ⚙️</div><button class="close-btn" onclick="closeSettings()">✕</button></div><div class="settings-info"><div class="settings-info-title">Current Pay Cycle Start</div><div class="settings-info-value" id="current-start-date">Loading...</div></div><div class="input-group"><label class="input-label">Update Pay Cycle Start Date</label><input type="date" id="settings-start-date" max="2099-12-31"></div><div class="warning-box"><p>⚠️ <strong>Important:</strong> Changing your pay cycle start date will recalculate all periods.</p></div><div class="modal-buttons"><button class="modal-btn cancel" onclick="closeSettings()">Cancel</button><button class="modal-btn save" onclick="saveSettings()">Save Changes</button></div></div></div>
+<div id="settings-modal" class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">Settings ⚙️</div><button class="close-btn" onclick="closeSettings()">✕</button></div><div class="settings-info"><div class="settings-info-title">Current Pay Cycle Start</div><div class="settings-info-value" id="current-start-date">Loading...</div></div><div class="input-group"><label class="input-label">Update Pay Cycle Start Date</label><input type="date" id="settings-start-date" max="2099-12-31"></div><div class="divider" style="margin:30px 0">Security</div>
+<div class="settings-info" style="background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.3)">
+  <div class="settings-info-title">Change Passcode</div>
+  <div class="settings-info-value" style="color:#fbbf24">Update your 6-digit passcode</div>
+</div>
+<div class="input-group">
+  <label class="input-label">Current Passcode (6 digits)</label>
+  <input type="password" id="current-passcode-settings" maxlength="6" placeholder="••••••" inputmode="numeric" pattern="[0-9]*">
+</div>
+<div class="input-group">
+  <label class="input-label">New Passcode (6 digits)</label>
+  <input type="password" id="new-passcode-settings" maxlength="6" placeholder="••••••" inputmode="numeric" pattern="[0-9]*">
+</div>
+<div class="input-group">
+  <label class="input-label">Confirm New Passcode</label>
+  <input type="password" id="confirm-passcode-settings" maxlength="6" placeholder="••••••" inputmode="numeric" pattern="[0-9]*">
+</div>
+<button class="sync-btn" style="width:100%;margin-bottom:30px;background:linear-gradient(135deg,rgba(251,191,36,.25),rgba(251,191,36,.15));border-color:rgba(251,191,36,.4)" onclick="changePasscodeSettings()">🔒 Update Passcode</button>
+
+<div class="divider" style="margin:30px 0">Pay Cycle Settings</div>
+<div class="warning-box"><p>⚠️ <strong>Important:</strong> Changing your pay cycle start date will recalculate all periods.</p></div><div class="modal-buttons"><button class="modal-btn cancel" onclick="closeSettings()">Cancel</button><button class="modal-btn save" onclick="saveSettings()">Save Changes</button></div></div></div>
 <div id="edit-modal" class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">Edit Expense</div><button class="close-btn" onclick="closeEditModal()">✕</button></div><div class="input-group"><label class="input-label">Category</label><input type="text" id="edit-category" placeholder="e.g., Groceries"></div><div class="input-group"><label class="input-label">Amount</label><input type="number" id="edit-amount" placeholder="0.00" step="0.01"></div><div class="modal-buttons"><button class="modal-btn cancel" onclick="closeEditModal()">Cancel</button><button class="modal-btn save" onclick="saveEdit()">Save Changes</button></div></div></div>
 <div id="analytics-modal" class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">Utility Analytics</div><button class="close-btn" onclick="closeAnalytics()">✕</button></div><div id="analytics-body"></div></div></div>
 <div id="insights-modal" class="modal"><div class="modal-content insights-content"><div class="modal-header"><div class="modal-title">Spending Insights 📈</div><button class="close-btn" onclick="closeInsights()">✕</button></div><div id="insights-body" class="insights-body"></div></div></div>
@@ -312,6 +332,65 @@ function lockApp() {
   setTimeout(() => document.getElementById('unlock-1').focus(), 300);
 }
 
+
+function changePasscodeSettings() {
+  const currentPass = document.getElementById('current-passcode-settings').value;
+  const newPass = document.getElementById('new-passcode-settings').value;
+  const confirmPass = document.getElementById('confirm-passcode-settings').value;
+
+  // Validation
+  if (!currentPass || !newPass || !confirmPass) {
+    alert('❌ Please fill in all fields');
+    return;
+  }
+
+  if (currentPass.length !== 6 || newPass.length !== 6 || confirmPass.length !== 6) {
+    alert('❌ Passcode must be exactly 6 digits');
+    return;
+  }
+
+  if (!/^\d{6}$/.test(currentPass) || !/^\d{6}$/.test(newPass)) {
+    alert('❌ Passcode must contain only numbers');
+    return;
+  }
+
+  // Verify current passcode using the hash function
+  if (hashCode(currentPass) !== authSettings.passcodeHash) {
+    alert('❌ Current passcode is incorrect');
+    document.getElementById('current-passcode-settings').value = '';
+    return;
+  }
+
+  // Check if new matches confirmation
+  if (newPass !== confirmPass) {
+    alert('❌ New passcode and confirmation do not match');
+    document.getElementById('new-passcode-settings').value = '';
+    document.getElementById('confirm-passcode-settings').value = '';
+    return;
+  }
+
+  // Check if new is same as old
+  if (newPass === currentPass) {
+    alert('❌ New passcode must be different from current passcode');
+    return;
+  }
+
+  // Update passcode
+  authSettings.passcodeHash = hashCode(newPass);
+  localStorage.setItem('authSettings', JSON.stringify(authSettings));
+
+  // Clear inputs
+  document.getElementById('current-passcode-settings').value = '';
+  document.getElementById('new-passcode-settings').value = '';
+  document.getElementById('confirm-passcode-settings').value = '';
+
+  alert('✅ Passcode updated successfully!');
+
+  if (navigator.vibrate) {
+    navigator.vibrate([50, 30, 50]);
+  }
+}
+
 function resetActivityTimer() {
   lastActivityTime = Date.now();
   if (lockTimer) clearTimeout(lockTimer);
@@ -324,27 +403,13 @@ function trackActivity() {
   if (!authSettings.isLocked) resetActivityTimer();
 }
 
-function showRecoveryOptions() {
-  document.getElementById('recovery-options-modal').classList.add('active');
-}
 
-function closeRecoveryOptions() {
-  document.getElementById('recovery-options-modal').classList.remove('active');
-}
 
-function showSecurityQuestionsRecovery() {
-  document.getElementById('recovery-options-modal').classList.remove('active');
-  document.getElementById('recovery-q1-label').textContent = authSettings.securityQuestions.q1;
-  document.getElementById('recovery-q2-label').textContent = authSettings.securityQuestions.q2;
-  document.getElementById('security-recovery-modal').classList.add('active');
-}
 
-function closeSecurityRecovery() {
-  document.getElementById('security-recovery-modal').classList.remove('active');
-  document.getElementById('recovery-a1').value = '';
-  document.getElementById('recovery-a2').value = '';
-  document.getElementById('recovery-error').style.display = 'none';
-}
+
+
+
+
 
 function verifySecurityAnswers() {
   const a1 = document.getElementById('recovery-a1').value.trim().toLowerCase();
@@ -361,31 +426,11 @@ function verifySecurityAnswers() {
   }
 }
 
-function showRecoveryKeyInput() {
-  document.getElementById('recovery-options-modal').classList.remove('active');
-  document.getElementById('recovery-key-input-modal').classList.add('active');
-}
 
-function closeRecoveryKeyInput() {
-  document.getElementById('recovery-key-input-modal').classList.remove('active');
-  document.getElementById('recovery-key-input').value = '';
-  document.getElementById('recovery-key-error').style.display = 'none';
-}
 
-function verifyRecoveryKey() {
-  const entered = document.getElementById('recovery-key-input').value.trim().replace(/\s+/g, '-').toLowerCase();
 
-  if (hashCode(entered) === authSettings.recoveryKeyHash) {
-    alert('✅ Recovery key verified! You are now unlocked.');
-    authSettings.isLocked = false;
-    closeRecoveryKeyInput();
-    document.getElementById('lock-screen').style.display = 'none';
-    document.body.style.overflow = 'auto';
-    resetActivityTimer();
-  } else {
-    document.getElementById('recovery-key-error').style.display = 'block';
-  }
-}
+
+
 
 function confirmDataReset() {
   if (confirm('⚠️ Delete ALL data? This cannot be undone!')) {
@@ -632,44 +677,12 @@ window.addEventListener('DOMContentLoaded', () => {
     </div>
     <div id="passcode-error" style="display:none; color:#ef4444; margin-top:20px; font-weight:600">❌ Incorrect passcode</div>
     <div style="margin-top:30px">
-      <button class="unlock-forgot-btn" onclick="showRecoveryOptions()">Forgot Passcode?</button>
+      
     </div>
   </div>
 </div>
 
-<!-- Recovery Options -->
-<div id="recovery-options-modal" class="modal auth-modal">
-  <div class="modal-content auth-content">
-    <div class="modal-header">
-      <div class="modal-title">🔓 Recover Access</div>
-      <button class="close-btn" onclick="closeRecoveryOptions()">✕</button>
-    </div>
-    <p class="auth-subtitle">Choose a recovery method:</p>
-    <div class="recovery-option-buttons">
-      <button class="recovery-option-btn" onclick="showSecurityQuestionsRecovery()">
-        <div class="recovery-icon">❓</div>
-        <div class="recovery-text">
-          <strong>Answer Security Questions</strong>
-          <span>Answer your 2 security questions</span>
-        </div>
-      </button>
-      <button class="recovery-option-btn" onclick="showRecoveryKeyInput()">
-        <div class="recovery-icon">🔑</div>
-        <div class="recovery-text">
-          <strong>Enter Recovery Key</strong>
-          <span>Use your 12-word recovery key</span>
-        </div>
-      </button>
-      <button class="recovery-option-btn danger" onclick="confirmDataReset()">
-        <div class="recovery-icon">⚠️</div>
-        <div class="recovery-text">
-          <strong>Reset App</strong>
-          <span style="color:#ef4444">Deletes ALL data</span>
-        </div>
-      </button>
-    </div>
-  </div>
-</div>
+
 
 <!-- Security Questions Recovery -->
 <div id="security-recovery-modal" class="modal auth-modal">
@@ -694,23 +707,6 @@ window.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
-<!-- Recovery Key Input -->
-<div id="recovery-key-input-modal" class="modal auth-modal">
-  <div class="modal-content auth-content">
-    <div class="modal-header">
-      <div class="modal-title">🔑 Enter Recovery Key</div>
-      <button class="close-btn" onclick="closeRecoveryKeyInput()">✕</button>
-    </div>
-    <p class="auth-subtitle">Enter your 12-word recovery key (separated by spaces or dashes)</p>
-    <div class="input-group">
-      <textarea id="recovery-key-input" placeholder="word1-word2-word3-word4-word5-word6-word7-word8-word9-word10-word11-word12" rows="4" style="width:100%; resize:vertical"></textarea>
-    </div>
-    <div id="recovery-key-error" style="display:none; color:#ef4444; margin-top:10px; font-weight:600">❌ Invalid recovery key</div>
-    <div class="modal-buttons">
-      <button class="modal-btn cancel" onclick="closeRecoveryKeyInput()">Cancel</button>
-      <button class="modal-btn save" onclick="verifyRecoveryKey()">Unlock App</button>
-    </div>
-  </div>
-</div>
+
 
 </body></html>
