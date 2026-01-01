@@ -494,8 +494,8 @@ function saveNewPinAfterRecovery() {
   localStorage.setItem('authSettings', JSON.stringify(authSettings));
   document.getElementById('new-pin-modal').classList.remove('active');
   document.getElementById('lock-screen').style.display = 'none';
-  alert('✅ New PIN saved!');
-  resetActivityTimer();
+  alert('✅ New PIN saved! Reloading app...');
+  location.reload();
 }
 function resetAppFromLockScreen() {
   if (confirm('⚠️ DELETE ALL? Cannot be undone!')) {
