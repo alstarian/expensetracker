@@ -153,26 +153,7 @@
 </div>
 </div>
 <div id="setup-wizard" class="modal setup-wizard"><div class="modal-content"><div class="modal-header"><div class="modal-title">Welcome! 👋</div></div><div class="wizard-icon">💰</div><p class="wizard-subtitle">Let's get you set up! When does your bi-weekly pay cycle start? This helps us track your expenses accurately across pay periods.</p><div class="quick-dates" id="quick-dates"></div><div class="divider">OR CHOOSE A DATE</div><div class="input-group"><label class="input-label">Custom Start Date</label><input type="date" id="setup-start-date" max="2099-12-31"></div><div class="modal-buttons"><button class="modal-btn save" onclick="completeSetup()">Get Started! 🚀</button></div><p style="margin-top:20px;font-size:.85rem;color:rgba(255,255,255,.5)">💡 Tip: Choose the first day of any recent pay period.</p></div></div>
-<div id="settings-modal" class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">Settings ⚙️</div><button class="close-btn" onclick="closeSettings()">✕</button></div><div class="settings-info"><div class="settings-info-title">Current Pay Cycle Start</div><div class="settings-info-value" id="current-start-date">Loading...</div></div><div class="input-group"><label class="input-label">Update Pay Cycle Start Date</label><input type="date" id="settings-start-date" max="2099-12-31"></div><div class="divider" style="margin:30px 0">Security</div>
-<div class="settings-info" style="background:rgba(251,191,36,.1);border-color:rgba(251,191,36,.3)">
-  <div class="settings-info-title">Change Passcode</div>
-  <div class="settings-info-value" style="color:#fbbf24">Update your 4-digit passcode</div>
-</div>
-<div class="input-group">
-  <label class="input-label">Current Passcode</label>
-  <input type="password" id="current-passcode-input" maxlength="4" placeholder="••••" inputmode="numeric">
-</div>
-<div class="input-group">
-  <label class="input-label">New Passcode</label>
-  <input type="password" id="new-passcode-input" maxlength="4" placeholder="••••" inputmode="numeric">
-</div>
-<div class="input-group">
-  <label class="input-label">Confirm New Passcode</label>
-  <input type="password" id="confirm-passcode-input" maxlength="4" placeholder="••••" inputmode="numeric">
-</div>
-<button class="sync-btn" style="width:100%;margin-bottom:30px" onclick="changePasscode()">🔒 Update Passcode</button>
-<div class="divider" style="margin:30px 0">Pay Cycle</div>
-<div class="warning-box"><p>⚠️ <strong>Important:</strong> Changing your pay cycle start date will recalculate all periods.</p></div><div class="modal-buttons"><button class="modal-btn cancel" onclick="closeSettings()">Cancel</button><button class="modal-btn save" onclick="saveSettings()">Save Changes</button></div></div></div>
+<div id="settings-modal" class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">Settings ⚙️</div><button class="close-btn" onclick="closeSettings()">✕</button></div><div class="settings-info"><div class="settings-info-title">Current Pay Cycle Start</div><div class="settings-info-value" id="current-start-date">Loading...</div></div><div class="input-group"><label class="input-label">Update Pay Cycle Start Date</label><input type="date" id="settings-start-date" max="2099-12-31"></div><div class="warning-box"><p>⚠️ <strong>Important:</strong> Changing your pay cycle start date will recalculate all periods.</p></div><div class="modal-buttons"><button class="modal-btn cancel" onclick="closeSettings()">Cancel</button><button class="modal-btn save" onclick="saveSettings()">Save Changes</button></div></div></div>
 <div id="edit-modal" class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">Edit Expense</div><button class="close-btn" onclick="closeEditModal()">✕</button></div><div class="input-group"><label class="input-label">Category</label><input type="text" id="edit-category" placeholder="e.g., Groceries"></div><div class="input-group"><label class="input-label">Amount</label><input type="number" id="edit-amount" placeholder="0.00" step="0.01"></div><div class="modal-buttons"><button class="modal-btn cancel" onclick="closeEditModal()">Cancel</button><button class="modal-btn save" onclick="saveEdit()">Save Changes</button></div></div></div>
 <div id="analytics-modal" class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">Utility Analytics</div><button class="close-btn" onclick="closeAnalytics()">✕</button></div><div id="analytics-body"></div></div></div>
 <div id="insights-modal" class="modal"><div class="modal-content insights-content"><div class="modal-header"><div class="modal-title">Spending Insights 📈</div><button class="close-btn" onclick="closeInsights()">✕</button></div><div id="insights-body" class="insights-body"></div></div></div>
@@ -323,55 +304,6 @@ function attemptUnlock() {
   }
 }
 
-
-function changePasscode() {
-  const currentPasscode = document.getElementById('current-passcode-input').value;
-  const newPasscode = document.getElementById('new-passcode-input').value;
-  const confirmPasscode = document.getElementById('confirm-passcode-input').value;
-
-  if (!currentPasscode || !newPasscode || !confirmPasscode) {
-    alert('❌ Please fill in all fields');
-    return;
-  }
-
-  if (currentPasscode.length !== 4 || newPasscode.length !== 4 || confirmPasscode.length !== 4) {
-    alert('❌ Passcode must be exactly 4 digits');
-    return;
-  }
-
-  if (!/^\d{4}$/.test(currentPasscode) || !/^\d{4}$/.test(newPasscode)) {
-    alert('❌ Passcode must contain only numbers');
-    return;
-  }
-
-  if (authSettings.passcode !== currentPasscode) {
-    alert('❌ Current passcode is incorrect');
-    document.getElementById('current-passcode-input').value = '';
-    return;
-  }
-
-  if (newPasscode !== confirmPasscode) {
-    alert('❌ New passcode and confirmation do not match');
-    document.getElementById('new-passcode-input').value = '';
-    document.getElementById('confirm-passcode-input').value = '';
-    return;
-  }
-
-  if (newPasscode === currentPasscode) {
-    alert('❌ New passcode must be different from current passcode');
-    return;
-  }
-
-  authSettings.passcode = newPasscode;
-  localStorage.setItem('authSettings', JSON.stringify(authSettings));
-
-  document.getElementById('current-passcode-input').value = '';
-  document.getElementById('new-passcode-input').value = '';
-  document.getElementById('confirm-passcode-input').value = '';
-
-  alert('✅ Passcode updated successfully!');
-}
-
 function lockApp() {
   if (!authSettings.passcodeHash) return;
   authSettings.isLocked = true;
@@ -392,11 +324,20 @@ function trackActivity() {
   if (!authSettings.isLocked) resetActivityTimer();
 }
 
+function showRecoveryOptions() {
+  document.getElementById('recovery-options-modal').classList.add('active');
+}
 
+function closeRecoveryOptions() {
+  document.getElementById('recovery-options-modal').classList.remove('active');
+}
 
-
-
-
+function showSecurityQuestionsRecovery() {
+  document.getElementById('recovery-options-modal').classList.remove('active');
+  document.getElementById('recovery-q1-label').textContent = authSettings.securityQuestions.q1;
+  document.getElementById('recovery-q2-label').textContent = authSettings.securityQuestions.q2;
+  document.getElementById('security-recovery-modal').classList.add('active');
+}
 
 function closeSecurityRecovery() {
   document.getElementById('security-recovery-modal').classList.remove('active');
@@ -431,7 +372,20 @@ function closeRecoveryKeyInput() {
   document.getElementById('recovery-key-error').style.display = 'none';
 }
 
+function verifyRecoveryKey() {
+  const entered = document.getElementById('recovery-key-input').value.trim().replace(/\s+/g, '-').toLowerCase();
 
+  if (hashCode(entered) === authSettings.recoveryKeyHash) {
+    alert('✅ Recovery key verified! You are now unlocked.');
+    authSettings.isLocked = false;
+    closeRecoveryKeyInput();
+    document.getElementById('lock-screen').style.display = 'none';
+    document.body.style.overflow = 'auto';
+    resetActivityTimer();
+  } else {
+    document.getElementById('recovery-key-error').style.display = 'block';
+  }
+}
 
 function confirmDataReset() {
   if (confirm('⚠️ Delete ALL data? This cannot be undone!')) {
@@ -639,7 +593,44 @@ window.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <!-- Recovery Key Display -->
-<div id="passcode-error" style="display:none; color:#ef4444; margin-top:20px; font-weight:600">❌ Incorrect passcode</div>
+<div id="recovery-key-modal" class="modal auth-modal">
+  <div class="modal-content auth-content">
+    <div class="modal-header"><div class="modal-title">🔑 Your Recovery Key</div></div>
+    <div class="auth-icon">⚠️</div>
+    <p class="auth-subtitle" style="color:#fbbf24; font-weight:700">WRITE THIS DOWN! Shown only once!</p>
+    <div class="recovery-key-display" id="recovery-key-display"></div>
+    <div class="warning-box" style="margin:20px 0">
+      <p><strong>⚠️ Important:</strong> This 12-word key can unlock your app if you forget your passcode. Store it somewhere safe (not digitally).</p>
+    </div>
+    <div class="input-group">
+      <label style="display:flex; align-items:center; gap:10px; cursor:pointer">
+        <input type="checkbox" id="recovery-confirm" style="width:auto; cursor:pointer">
+        <span>I have written down my recovery key</span>
+      </label>
+    </div>
+    <div class="modal-buttons">
+      <button class="modal-btn save" onclick="completeAuthSetup()" id="complete-setup-btn" disabled>🎉 Complete Setup</button>
+    </div>
+  </div>
+</div>
+
+<!-- Lock Screen -->
+<div id="lock-screen" style="display:none">
+  <div class="lock-container">
+    <div class="lock-header">
+      <div style="font-size:4rem">💰</div>
+      <h1 style="font-size:1.8rem; margin:10px 0">Expense Tracker</h1>
+      <p style="color:rgba(255,255,255,0.6); margin-bottom:40px">Enter your passcode</p>
+    </div>
+    <div class="passcode-input-group">
+      <input type="password" id="unlock-1" maxlength="1" class="passcode-digit" inputmode="numeric" pattern="[0-9]">
+      <input type="password" id="unlock-2" maxlength="1" class="passcode-digit" inputmode="numeric" pattern="[0-9]">
+      <input type="password" id="unlock-3" maxlength="1" class="passcode-digit" inputmode="numeric" pattern="[0-9]">
+      <input type="password" id="unlock-4" maxlength="1" class="passcode-digit" inputmode="numeric" pattern="[0-9]">
+      <input type="password" id="unlock-5" maxlength="1" class="passcode-digit" inputmode="numeric" pattern="[0-9]">
+      <input type="password" id="unlock-6" maxlength="1" class="passcode-digit" inputmode="numeric" pattern="[0-9]">
+    </div>
+    <div id="passcode-error" style="display:none; color:#ef4444; margin-top:20px; font-weight:600">❌ Incorrect passcode</div>
     <div style="margin-top:30px">
       <button class="unlock-forgot-btn" onclick="showRecoveryOptions()">Forgot Passcode?</button>
     </div>
@@ -647,7 +638,55 @@ window.addEventListener('DOMContentLoaded', () => {
 </div>
 
 <!-- Recovery Options -->
-<div id="recovery-error" style="display:none; color:#ef4444; margin-top:10px; font-weight:600">❌ Incorrect answers</div>
+<div id="recovery-options-modal" class="modal auth-modal">
+  <div class="modal-content auth-content">
+    <div class="modal-header">
+      <div class="modal-title">🔓 Recover Access</div>
+      <button class="close-btn" onclick="closeRecoveryOptions()">✕</button>
+    </div>
+    <p class="auth-subtitle">Choose a recovery method:</p>
+    <div class="recovery-option-buttons">
+      <button class="recovery-option-btn" onclick="showSecurityQuestionsRecovery()">
+        <div class="recovery-icon">❓</div>
+        <div class="recovery-text">
+          <strong>Answer Security Questions</strong>
+          <span>Answer your 2 security questions</span>
+        </div>
+      </button>
+      <button class="recovery-option-btn" onclick="showRecoveryKeyInput()">
+        <div class="recovery-icon">🔑</div>
+        <div class="recovery-text">
+          <strong>Enter Recovery Key</strong>
+          <span>Use your 12-word recovery key</span>
+        </div>
+      </button>
+      <button class="recovery-option-btn danger" onclick="confirmDataReset()">
+        <div class="recovery-icon">⚠️</div>
+        <div class="recovery-text">
+          <strong>Reset App</strong>
+          <span style="color:#ef4444">Deletes ALL data</span>
+        </div>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Security Questions Recovery -->
+<div id="security-recovery-modal" class="modal auth-modal">
+  <div class="modal-content auth-content">
+    <div class="modal-header">
+      <div class="modal-title">❓ Answer Security Questions</div>
+      <button class="close-btn" onclick="closeSecurityRecovery()">✕</button>
+    </div>
+    <div class="input-group">
+      <label class="input-label" id="recovery-q1-label">Question 1</label>
+      <input type="text" id="recovery-a1" placeholder="Your answer" autocomplete="off">
+    </div>
+    <div class="input-group">
+      <label class="input-label" id="recovery-q2-label">Question 2</label>
+      <input type="text" id="recovery-a2" placeholder="Your answer" autocomplete="off">
+    </div>
+    <div id="recovery-error" style="display:none; color:#ef4444; margin-top:10px; font-weight:600">❌ Incorrect answers</div>
     <div class="modal-buttons">
       <button class="modal-btn cancel" onclick="closeSecurityRecovery()">Cancel</button>
       <button class="modal-btn save" onclick="verifySecurityAnswers()">Verify & Reset Passcode</button>
