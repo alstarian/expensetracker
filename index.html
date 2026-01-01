@@ -172,6 +172,21 @@
 </div>
 <button class="sync-btn" style="width:100%;margin-bottom:30px;background:linear-gradient(135deg,rgba(251,191,36,.25),rgba(251,191,36,.15));border-color:rgba(251,191,36,.4)" onclick="changePasscodeSettings()">🔒 Update Passcode</button>
 
+      <div class="divider" style="margin:30px 0">🔑 Recovery Code</div>
+
+      <div style="background:rgba(59,130,246,0.15);border:2px solid rgba(59,130,246,0.4);border-radius:16px;padding:24px;margin:20px 0">
+        <div style="font-size:1.1rem;font-weight:700;color:#3b82f6;margin-bottom:12px">
+          Generate New Recovery Code
+        </div>
+        <p style="font-size:0.9rem;color:rgba(255,255,255,0.85);line-height:1.6;margin:12px 0 16px 0">
+          Lost your recovery code email? Generate a new one here. You'll need your current PIN to verify.
+        </p>
+        <button class="modal-btn save" style="width:100%;background:linear-gradient(135deg,rgba(59,130,246,0.3),rgba(59,130,246,0.2));border-color:rgba(59,130,246,0.5)" onclick="showRegenerateRecoveryCode()">
+          🔑 Generate New Recovery Code
+        </button>
+      </div>
+
+
 <div class="divider" style="margin:30px 0">📅 Pay Cycle Settings</div>
 <div class="warning-box"><p>⚠️ <strong>Important:</strong> Changing your pay cycle start date will recalculate all periods.</p></div><div class="modal-buttons"><button class="modal-btn cancel" onclick="closeSettings()">Cancel</button><button class="modal-btn save" onclick="saveSettings()">Save Changes</button></div></div></div>
 <div id="edit-modal" class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">Edit Expense</div><button class="close-btn" onclick="closeEditModal()">✕</button></div><div class="input-group"><label class="input-label">Category</label><input type="text" id="edit-category" placeholder="e.g., Groceries"></div><div class="input-group"><label class="input-label">Amount</label><input type="number" id="edit-amount" placeholder="0.00" step="0.01"></div><div class="modal-buttons"><button class="modal-btn cancel" onclick="closeEditModal()">Cancel</button><button class="modal-btn save" onclick="saveEdit()">Save Changes</button></div></div></div>
@@ -182,7 +197,9 @@
 // ==================== AUTHENTICATION SYSTEM ====================
 
 let authSettings = {
-  lockTimeout: 60000, // 1 minute
+  passcodeHash: null,
+  recoveryCode: null,
+  lockTimeout: 60000,
   isLocked: true
 };
 let lastActivityTime = Date.now();
@@ -242,21 +259,23 @@ function completeAuthSetup() {
   for (let i = 1; i <= 6; i++) {
     passcode += document.getElementById('setup-' + i).value;
   }
-
   if (passcode.length !== 6 || !/^\d{6}$/.test(passcode)) {
     alert('❌ Please enter a complete 6-digit PIN');
     return;
   }
-
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let recoveryCode = '';
+  for (let i = 0; i < 4; i++) {
+    recoveryCode += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
   authSettings.passcodeHash = hashCode(passcode);
+  authSettings.recoveryCode = hashCode(recoveryCode);
   authSettings.isLocked = false;
   localStorage.setItem('authSettings', JSON.stringify(authSettings));
-
   document.getElementById('passcode-setup-modal').classList.remove('active');
-
-  alert('✅ Security setup complete! Your app is now protected.');
-
-  resetActivityTimer();
+  document.getElementById('recovery-display-code').textContent = recoveryCode;
+  document.getElementById('recovery-code-modal').classList.add('active');
+  window.tempRecoveryCode = recoveryCode;
 }
 
 function attemptUnlock() {
@@ -406,6 +425,119 @@ function checkAuthSetup() {
   }
 }
 
+
+function emailRecoveryCode() {
+  const code = window.tempRecoveryCode;
+  const subject = encodeURIComponent('Expense Tracker - Recovery Code');
+  const body = encodeURIComponent('Your PIN Recovery Code: ' + code + '\n\nSAVE THIS!');
+  window.location.href = 'mailto:?subject=' + subject + '&body=' + body;
+  setTimeout(() => { window.tempRecoveryCode = null; }, 1000);
+}
+function closeRecoveryCodeModal() {
+  document.getElementById('recovery-code-modal').classList.remove('active');
+  window.tempRecoveryCode = null;
+}
+function showRecoveryCodeInput() {
+  const modal = document.getElementById('recovery-input-modal');
+  if (!modal) { alert('Error'); return; }
+  for (let i = 1; i <= 4; i++) {
+    const input = document.getElementById('recovery-' + i);
+    if (input) input.value = '';
+  }
+  modal.classList.add('active');
+  setTimeout(() => {
+    setupRecoveryCodeInputs();
+    document.getElementById('recovery-1')?.focus();
+  }, 100);
+}
+function closeRecoveryInputModal() {
+  document.getElementById('recovery-input-modal').classList.remove('active');
+  for (let i = 1; i <= 4; i++) { document.getElementById('recovery-' + i).value = ''; }
+}
+function setupRecoveryCodeInputs() {
+  for (let i = 1; i <= 4; i++) {
+    const input = document.getElementById('recovery-' + i);
+    if (!input) continue;
+    input.addEventListener('input', function() {
+      this.value = this.value.toUpperCase();
+      if (this.value.length === 1 && i < 4) {
+        document.getElementById('recovery-' + (i + 1)).focus();
+      }
+    });
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Backspace' && this.value === '' && i > 1) {
+        document.getElementById('recovery-' + (i - 1)).focus();
+      }
+    });
+  }
+}
+function verifyRecoveryCode() {
+  let code = '';
+  for (let i = 1; i <= 4; i++) { code += document.getElementById('recovery-' + i).value; }
+  if (code.length !== 4) { alert('❌ Enter complete code'); return; }
+  if (hashCode(code) === authSettings.recoveryCode) {
+    document.getElementById('recovery-input-modal').classList.remove('active');
+    document.getElementById('new-pin-modal').classList.add('active');
+    setupPasscodeInputs('newpin');
+  } else {
+    alert('❌ Incorrect code');
+    for (let i = 1; i <= 4; i++) { document.getElementById('recovery-' + i).value = ''; }
+    document.getElementById('recovery-1').focus();
+  }
+}
+function saveNewPinAfterRecovery() {
+  let pin = '';
+  for (let i = 1; i <= 6; i++) { pin += document.getElementById('newpin-' + i).value; }
+  if (pin.length !== 6 || !/^\d{6}$/.test(pin)) { alert('❌ Complete PIN'); return; }
+  authSettings.passcodeHash = hashCode(pin);
+  authSettings.isLocked = false;
+  localStorage.setItem('authSettings', JSON.stringify(authSettings));
+  document.getElementById('new-pin-modal').classList.remove('active');
+  document.getElementById('lock-screen').style.display = 'none';
+  alert('✅ New PIN saved!');
+  resetActivityTimer();
+}
+function resetAppFromLockScreen() {
+  if (confirm('⚠️ DELETE ALL? Cannot be undone!')) {
+    if (confirm('Final confirmation?')) { localStorage.clear(); location.reload(); }
+  }
+}
+function showRegenerateRecoveryCode() {
+  document.getElementById('regenerate-recovery-modal').classList.add('active');
+  setupPasscodeInputs('verify');
+  setTimeout(() => { document.getElementById('verify-1')?.focus(); }, 100);
+}
+function closeRegenerateModal() {
+  document.getElementById('regenerate-recovery-modal').classList.remove('active');
+  for (let i = 1; i <= 6; i++) {
+    const input = document.getElementById('verify-' + i);
+    if (input) input.value = '';
+  }
+}
+function verifyPinAndGenerateNew() {
+  let pin = '';
+  for (let i = 1; i <= 6; i++) { pin += document.getElementById('verify-' + i).value; }
+  if (pin.length !== 6 || !/^\d{6}$/.test(pin)) { alert('❌ Complete PIN'); return; }
+  if (hashCode(pin) !== authSettings.passcodeHash) {
+    alert('❌ Incorrect PIN');
+    for (let i = 1; i <= 6; i++) { document.getElementById('verify-' + i).value = ''; }
+    document.getElementById('verify-1').focus();
+    return;
+  }
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  let newCode = '';
+  for (let i = 0; i < 4; i++) { newCode += chars.charAt(Math.floor(Math.random() * chars.length)); }
+  authSettings.recoveryCode = hashCode(newCode);
+  localStorage.setItem('authSettings', JSON.stringify(authSettings));
+  document.getElementById('new-recovery-display').textContent = newCode;
+  window.tempRecoveryCode = newCode;
+  document.getElementById('regenerate-recovery-modal').classList.remove('active');
+  document.getElementById('new-recovery-code-modal').classList.add('active');
+}
+function closeNewRecoveryModal() {
+  document.getElementById('new-recovery-code-modal').classList.remove('active');
+  window.tempRecoveryCode = null;
+}
 function initAuth() {
   setupPasscodeInputs();
   checkAuthSetup();
@@ -552,7 +684,12 @@ window.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
-<!-- Lock Screen -->
+  <div id="recovery-code-modal" class="modal auth-modal" style="z-index:10001"><div class="modal-content" style="max-width:550px"><div class="modal-header"><div class="modal-title">✅ PIN Created!</div></div><div class="auth-content"><div class="auth-icon">🔑</div><p class="auth-subtitle" style="font-size:1.1rem;margin-bottom:20px"><strong>Your Recovery Code:</strong></p><div style="background:rgba(251,191,36,0.15);border:2px solid rgba(251,191,36,0.4);border-radius:16px;padding:30px;margin:20px 0"><div id="recovery-display-code" style="font-size:3rem;font-weight:800;letter-spacing:8px;color:#fbbf24;text-align:center;font-family:monospace">XXXX</div></div><div style="background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);border-radius:12px;padding:20px;margin:20px 0"><p style="color:rgba(255,255,255,0.9);font-size:0.95rem;margin:0"><strong style="color:#ef4444">⚠️</strong> Email NOW!</p></div><button class="modal-btn save" style="width:100%;margin-bottom:12px" onclick="emailRecoveryCode()">📧 Email</button><button class="modal-btn cancel" style="width:100%" onclick="closeRecoveryCodeModal()">Later</button></div></div></div>
+  <div id="recovery-input-modal" class="modal auth-modal" style="z-index:10001"><div class="modal-content"><div class="modal-header"><div class="modal-title">🔓 Enter Code</div><button class="close-btn" onclick="closeRecoveryInputModal()">×</button></div><div class="auth-content"><div class="auth-icon">🔑</div><p class="auth-subtitle">4-character code from email</p><div class="passcode-input-group"><input type="text" class="passcode-digit" id="recovery-1" maxlength="1" style="text-transform:uppercase"><input type="text" class="passcode-digit" id="recovery-2" maxlength="1" style="text-transform:uppercase"><input type="text" class="passcode-digit" id="recovery-3" maxlength="1" style="text-transform:uppercase"><input type="text" class="passcode-digit" id="recovery-4" maxlength="1" style="text-transform:uppercase"></div><p class="passcode-hint">From email</p><button class="modal-btn save" style="width:100%;margin-top:20px" onclick="verifyRecoveryCode()">✅ Verify</button></div></div></div>
+  <div id="new-pin-modal" class="modal auth-modal" style="z-index:10001"><div class="modal-content"><div class="modal-header"><div class="modal-title">🔑 New PIN</div></div><div class="auth-content"><div class="auth-icon">✅</div><p class="auth-subtitle">Create new PIN</p><div class="passcode-input-group"><input type="password" class="passcode-digit" id="newpin-1" maxlength="1" inputmode="numeric"><input type="password" class="passcode-digit" id="newpin-2" maxlength="1" inputmode="numeric"><input type="password" class="passcode-digit" id="newpin-3" maxlength="1" inputmode="numeric"><input type="password" class="passcode-digit" id="newpin-4" maxlength="1" inputmode="numeric"><input type="password" class="passcode-digit" id="newpin-5" maxlength="1" inputmode="numeric"><input type="password" class="passcode-digit" id="newpin-6" maxlength="1" inputmode="numeric"></div><p class="passcode-hint">6 digits</p><button class="modal-btn save" style="width:100%;margin-top:20px" onclick="saveNewPinAfterRecovery()">✅ Save</button></div></div></div>
+  <div id="regenerate-recovery-modal" class="modal auth-modal" style="z-index:10001"><div class="modal-content"><div class="modal-header"><div class="modal-title">🔐 Verify PIN</div><button class="close-btn" onclick="closeRegenerateModal()">×</button></div><div class="auth-content"><div class="auth-icon">🔑</div><p class="auth-subtitle">Enter current PIN</p><div class="passcode-input-group"><input type="password" class="passcode-digit" id="verify-1" maxlength="1" inputmode="numeric"><input type="password" class="passcode-digit" id="verify-2" maxlength="1" inputmode="numeric"><input type="password" class="passcode-digit" id="verify-3" maxlength="1" inputmode="numeric"><input type="password" class="passcode-digit" id="verify-4" maxlength="1" inputmode="numeric"><input type="password" class="passcode-digit" id="verify-5" maxlength="1" inputmode="numeric"><input type="password" class="passcode-digit" id="verify-6" maxlength="1" inputmode="numeric"></div><p class="passcode-hint">Current PIN</p><button class="modal-btn save" style="width:100%;margin-top:20px" onclick="verifyPinAndGenerateNew()">✅ Generate</button></div></div></div>
+  <div id="new-recovery-code-modal" class="modal auth-modal" style="z-index:10002"><div class="modal-content" style="max-width:550px"><div class="modal-header"><div class="modal-title">✅ New Code!</div></div><div class="auth-content"><div class="auth-icon">🔑</div><p class="auth-subtitle" style="font-size:1.1rem;margin-bottom:20px"><strong>NEW Code:</strong></p><div style="background:rgba(251,191,36,0.15);border:2px solid rgba(251,191,36,0.4);border-radius:16px;padding:30px;margin:20px 0"><div id="new-recovery-display" style="font-size:3rem;font-weight:800;letter-spacing:8px;color:#fbbf24;text-align:center;font-family:monospace">XXXX</div></div><div style="background:rgba(59,130,246,0.1);border:1px solid rgba(59,130,246,0.3);border-radius:12px;padding:20px;margin:20px 0"><p style="color:rgba(255,255,255,0.9);font-size:0.95rem;margin:0"><strong style="color:#3b82f6">ℹ️</strong> Old code invalid!</p></div><button class="modal-btn save" style="width:100%;margin-bottom:12px" onclick="emailRecoveryCode()">📧 Email</button><button class="modal-btn cancel" style="width:100%" onclick="closeNewRecoveryModal()">Done</button></div></div></div>
+  <!-- Lock Screen -->
 <div id="lock-screen" style="display:none">
   <div class="lock-container">
     <div class="lock-header">
@@ -569,6 +706,8 @@ window.addEventListener('DOMContentLoaded', () => {
       <input type="password" id="unlock-6" maxlength="1" class="passcode-digit" inputmode="numeric" pattern="[0-9]">
     </div>
     <div id="passcode-error" style="display:none; color:#ef4444; margin-top:20px; font-weight:600">❌ Incorrect passcode</div>
+        <div style="margin-top:30px"><button style="background:rgba(59,130,246,0.2);border:1px solid rgba(59,130,246,0.4);color:#3b82f6;padding:14px;border-radius:12px;cursor:pointer;font-weight:700;font-size:1rem;width:100%" onclick="showRecoveryCodeInput()">🔑 Use Recovery Code</button></div><div style="margin-top:12px"><button style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.3);color:#ef4444;padding:10px;border-radius:10px;cursor:pointer;font-size:0.85rem;width:100%" onclick="resetAppFromLockScreen()">🗑️ Reset</button></div>
+
     <div style="margin-top:30px">
       
     </div>
