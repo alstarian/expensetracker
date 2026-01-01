@@ -40,10 +40,16 @@
 }
 .lock-header { margin-bottom: 20px; }
 .unlock-forgot-btn {
-  background: none; border: none; color: #fbbf24; font-size: 0.9rem;
+  background: none; border: none; color: #fbbf24; font-size: 0.95rem;
   cursor: pointer; text-decoration: underline; transition: all 0.3s;
+  padding: 12px 20px; margin-top: 10px; font-weight: 600;
+  position: relative; z-index: 10;
 }
-.unlock-forgot-btn:hover { color: #f59e0b; transform: scale(1.05); }
+.unlock-forgot-btn:hover { 
+  color: #f59e0b; transform: scale(1.08); 
+  text-shadow: 0 0 10px rgba(251,191,36,0.5);
+}
+.unlock-forgot-btn:active { transform: scale(0.98); }
 
 @keyframes shake {
   0%, 100% { transform: translateX(0); }
@@ -325,6 +331,10 @@ function trackActivity() {
 }
 
 function showRecoveryOptions() {
+  // FIX: This should work WITHOUT entering correct passcode
+  // Clear any error states
+  document.getElementById('passcode-error').style.display = 'none';
+  // Show the recovery modal immediately
   document.getElementById('recovery-options-modal').classList.add('active');
 }
 
@@ -333,6 +343,12 @@ function closeRecoveryOptions() {
 }
 
 function showSecurityQuestionsRecovery() {
+  // FIX: Check if security questions exist before accessing them
+  if (!authSettings.securityQuestions || !authSettings.securityQuestions.q1) {
+    alert('⚠️ Security questions were not set up. Please use Recovery Key or Reset App.');
+    return;
+  }
+
   document.getElementById('recovery-options-modal').classList.remove('active');
   document.getElementById('recovery-q1-label').textContent = authSettings.securityQuestions.q1;
   document.getElementById('recovery-q2-label').textContent = authSettings.securityQuestions.q2;
@@ -632,7 +648,7 @@ window.addEventListener('DOMContentLoaded', () => {
     </div>
     <div id="passcode-error" style="display:none; color:#ef4444; margin-top:20px; font-weight:600">❌ Incorrect passcode</div>
     <div style="margin-top:30px">
-      <button class="unlock-forgot-btn" onclick="showRecoveryOptions()">Forgot Passcode?</button>
+      <button class="unlock-forgot-btn" onclick="event.stopPropagation(); showRecoveryOptions();" type="button">Forgot Passcode?</button>
     </div>
   </div>
 </div>
