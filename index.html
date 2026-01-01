@@ -160,15 +160,15 @@
 </div>
 <div class="input-group">
   <label class="input-label">Current Passcode (6 digits)</label>
-  <input type="password" id="current-passcode-settings" maxlength="6" placeholder="••••••" inputmode="numeric">
+  <input type="password" id="current-passcode-settings" maxlength="6" placeholder="••••••" inputmode="numeric" pattern="[0-9]*">
 </div>
 <div class="input-group">
   <label class="input-label">New Passcode (6 digits)</label>
-  <input type="password" id="new-passcode-settings" maxlength="6" placeholder="••••••" inputmode="numeric">
+  <input type="password" id="new-passcode-settings" maxlength="6" placeholder="••••••" inputmode="numeric" pattern="[0-9]*">
 </div>
 <div class="input-group">
   <label class="input-label">Confirm New Passcode</label>
-  <input type="password" id="confirm-passcode-settings" maxlength="6" placeholder="••••••" inputmode="numeric">
+  <input type="password" id="confirm-passcode-settings" maxlength="6" placeholder="••••••" inputmode="numeric" pattern="[0-9]*">
 </div>
 <button class="sync-btn" style="width:100%;margin-bottom:30px;background:linear-gradient(135deg,rgba(251,191,36,.25),rgba(251,191,36,.15));border-color:rgba(251,191,36,.4)" onclick="changePasscodeSettings()">🔒 Update Passcode</button>
 
@@ -182,6 +182,9 @@
 // ==================== AUTHENTICATION SYSTEM ====================
 
 let authSettings = {
+  passcodeHash: null,
+  securityQuestions: null,
+  recoveryKeyHash: null,
   lockTimeout: 60000, // 1 minute
   isLocked: true
 };
@@ -233,9 +236,58 @@ function proceedToSecurityQuestions() {
   document.getElementById('security-questions-modal').classList.add('active');
 }
 
+function backToPasscodeSetup() {
+  document.getElementById('security-questions-modal').classList.remove('active');
+  document.getElementById('passcode-setup-modal').classList.add('active');
+}
 
+function generateRecoveryKey() {
+  const q1 = document.getElementById('security-q1').value;
+  const a1 = document.getElementById('security-a1').value.trim();
+  const q2 = document.getElementById('security-q2').value;
+  const a2 = document.getElementById('security-a2').value.trim();
 
+  if (!q1 || !a1 || !q2 || !a2) {
+    alert('❌ Please answer both security questions');
+    return;
+  }
+  if (q1 === q2) {
+    alert('❌ Please choose different questions');
+    return;
+  }
 
+  const questionTexts = {
+    city: "What city were you born in?",
+    mother: "What is your mother's maiden name?",
+    pet: "What was your first pet's name?",
+    school: "What high school did you attend?",
+    food: "What is your favorite food?",
+    street: "What street did you grow up on?",
+    car: "What was your first car?",
+    job: "What was your first job?",
+    friend: "What is your best friend's name?",
+    book: "What is your favorite book?"
+  };
+
+  authSettings.securityQuestions = {
+    q1: questionTexts[q1],
+    a1: hashCode(a1.toLowerCase()),
+    q2: questionTexts[q2],
+    a2: hashCode(a2.toLowerCase())
+  };
+
+  const words = ['apple','beach','cloud','dream','eagle','frost','grape','heart','image','joker','knight','lemon','magic','night','ocean','peace','quest','river','storm','trust','unity','voice','water','xenon','youth','zebra'];
+  const recoveryKey = Array.from({length: 12}, () => words[Math.floor(Math.random() * words.length)]).join('-');
+  authSettings.recoveryKeyHash = hashCode(recoveryKey);
+
+  document.getElementById('recovery-key-display').textContent = recoveryKey;
+  document.getElementById('security-questions-modal').classList.remove('active');
+  document.getElementById('recovery-key-modal').classList.add('active');
+
+  document.getElementById('recovery-confirm').addEventListener('change', function() {
+    document.getElementById('complete-setup-btn').disabled = !this.checked;
+  });
+}
 
 function completeAuthSetup() {
   authSettings.passcodeHash = hashCode(tempPasscode);
@@ -280,20 +332,13 @@ function lockApp() {
   setTimeout(() => document.getElementById('unlock-1').focus(), 300);
 }
 
-function resetActivityTimer() {
-  lastActivityTime = Date.now();
-  if (lockTimer) clearTimeout(lockTimer);
-  lockTimer = setTimeout(() => {
-    if (!authSettings.isLocked) lockApp();
-  }, authSettings.lockTimeout);
-}
-
 
 function changePasscodeSettings() {
   const currentPass = document.getElementById('current-passcode-settings').value;
   const newPass = document.getElementById('new-passcode-settings').value;
   const confirmPass = document.getElementById('confirm-passcode-settings').value;
 
+  // Validation
   if (!currentPass || !newPass || !confirmPass) {
     alert('❌ Please fill in all fields');
     return;
@@ -309,12 +354,14 @@ function changePasscodeSettings() {
     return;
   }
 
+  // Verify current passcode using the hash function
   if (hashCode(currentPass) !== authSettings.passcodeHash) {
     alert('❌ Current passcode is incorrect');
     document.getElementById('current-passcode-settings').value = '';
     return;
   }
 
+  // Check if new matches confirmation
   if (newPass !== confirmPass) {
     alert('❌ New passcode and confirmation do not match');
     document.getElementById('new-passcode-settings').value = '';
@@ -322,14 +369,17 @@ function changePasscodeSettings() {
     return;
   }
 
+  // Check if new is same as old
   if (newPass === currentPass) {
     alert('❌ New passcode must be different from current passcode');
     return;
   }
 
+  // Update passcode
   authSettings.passcodeHash = hashCode(newPass);
   localStorage.setItem('authSettings', JSON.stringify(authSettings));
 
+  // Clear inputs
   document.getElementById('current-passcode-settings').value = '';
   document.getElementById('new-passcode-settings').value = '';
   document.getElementById('confirm-passcode-settings').value = '';
@@ -339,6 +389,14 @@ function changePasscodeSettings() {
   if (navigator.vibrate) {
     navigator.vibrate([50, 30, 50]);
   }
+}
+
+function resetActivityTimer() {
+  lastActivityTime = Date.now();
+  if (lockTimer) clearTimeout(lockTimer);
+  lockTimer = setTimeout(() => {
+    if (!authSettings.isLocked) lockApp();
+  }, authSettings.lockTimeout);
 }
 
 function trackActivity() {
@@ -534,7 +592,47 @@ window.addEventListener('DOMContentLoaded', () => {
     </div>
     <p class="passcode-hint">Enter 6 digits (0-9)</p>
     <div class="modal-buttons">
-      <button class="modal-btn save" onclick="completeAuthSetup()">🔒 Complete Setup</button>
+      <button class="modal-btn save" onclick="proceedToSecurityQuestions()">Next: Security Questions →</button>
+    </div>
+  </div>
+</div>
+
+<!-- Security Questions -->
+<div id="security-questions-modal" class="modal auth-modal">
+  <div class="modal-content auth-content">
+    <div class="modal-header"><div class="modal-title">🛡️ Set Recovery Options</div></div>
+    <p class="auth-subtitle">Choose 2 security questions in case you forget your passcode</p>
+    <div class="input-group">
+      <label class="input-label">Question 1</label>
+      <select id="security-q1" class="security-question-select">
+        <option value="">Select...</option>
+        <option value="city">What city were you born in?</option>
+        <option value="mother">What is your mother's maiden name?</option>
+        <option value="pet">What was your first pet's name?</option>
+        <option value="school">What high school did you attend?</option>
+        <option value="food">What is your favorite food?</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <input type="text" id="security-a1" placeholder="Your answer (case-insensitive)" autocomplete="off">
+    </div>
+    <div class="input-group" style="margin-top:20px">
+      <label class="input-label">Question 2</label>
+      <select id="security-q2" class="security-question-select">
+        <option value="">Select...</option>
+        <option value="street">What street did you grow up on?</option>
+        <option value="car">What was your first car?</option>
+        <option value="job">What was your first job?</option>
+        <option value="friend">What is your best friend's name?</option>
+        <option value="book">What is your favorite book?</option>
+      </select>
+    </div>
+    <div class="input-group">
+      <input type="text" id="security-a2" placeholder="Your answer (case-insensitive)" autocomplete="off">
+    </div>
+    <div class="modal-buttons">
+      <button class="modal-btn cancel" onclick="backToPasscodeSetup()">← Back</button>
+      <button class="modal-btn save" onclick="generateRecoveryKey()">Next: Recovery Key →</button>
     </div>
   </div>
 </div>
@@ -584,23 +682,31 @@ window.addEventListener('DOMContentLoaded', () => {
   </div>
 </div>
 
-<!-- Recovery Key Input -->
-<div id="recovery-key-input-modal" class="modal auth-modal">
+
+
+<!-- Security Questions Recovery -->
+<div id="security-recovery-modal" class="modal auth-modal">
   <div class="modal-content auth-content">
     <div class="modal-header">
-      <div class="modal-title">🔑 Enter Recovery Key</div>
-      <button class="close-btn" onclick="closeRecoveryKeyInput()">✕</button>
+      <div class="modal-title">❓ Answer Security Questions</div>
+      <button class="close-btn" onclick="closeSecurityRecovery()">✕</button>
     </div>
-    <p class="auth-subtitle">Enter your 12-word recovery key (separated by spaces or dashes)</p>
     <div class="input-group">
-      <textarea id="recovery-key-input" placeholder="word1-word2-word3-word4-word5-word6-word7-word8-word9-word10-word11-word12" rows="4" style="width:100%; resize:vertical"></textarea>
+      <label class="input-label" id="recovery-q1-label">Question 1</label>
+      <input type="text" id="recovery-a1" placeholder="Your answer" autocomplete="off">
     </div>
-    <div id="recovery-key-error" style="display:none; color:#ef4444; margin-top:10px; font-weight:600">❌ Invalid recovery key</div>
+    <div class="input-group">
+      <label class="input-label" id="recovery-q2-label">Question 2</label>
+      <input type="text" id="recovery-a2" placeholder="Your answer" autocomplete="off">
+    </div>
+    <div id="recovery-error" style="display:none; color:#ef4444; margin-top:10px; font-weight:600">❌ Incorrect answers</div>
     <div class="modal-buttons">
-      <button class="modal-btn cancel" onclick="closeRecoveryKeyInput()">Cancel</button>
-      <button class="modal-btn save" onclick="verifyRecoveryKey()">Unlock App</button>
+      <button class="modal-btn cancel" onclick="closeSecurityRecovery()">Cancel</button>
+      <button class="modal-btn save" onclick="verifySecurityAnswers()">Verify & Reset Passcode</button>
     </div>
   </div>
 </div>
+
+
 
 </body></html>
