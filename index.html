@@ -126,6 +126,14 @@
 .pane.monthly::before {
   display: none !important;
 }
+
+/* Notification Toggle Switch */
+#notifications-toggle:checked + span {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+#notifications-toggle:checked + span + span {
+  transform: translateX(26px);
+}
 </style>
 </head>
 <body>
@@ -229,6 +237,28 @@
       </div>
 
 
+
+    <div class="divider" style="margin:30px 0">🔔 Push Notifications</div>
+    <div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:12px;padding:16px;margin-bottom:20px;">
+      <div style="font-size:0.85rem;color:rgba(255,255,255,0.8);line-height:1.6;">
+        <strong style="color:#fbbf24;">📱 Get reminded about expenses!</strong><br>
+        Enable notifications to receive reminders at the start of each pay period.
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,0.03);padding:16px;border-radius:12px;margin-bottom:12px;">
+      <div>
+        <div style="font-weight:600;margin-bottom:4px;">Enable Notifications</div>
+        <div style="font-size:0.75rem;color:rgba(255,255,255,0.6);">Get pay period reminders</div>
+      </div>
+      <label style="position:relative;display:inline-block;width:60px;height:34px;">
+        <input type="checkbox" id="notifications-toggle" onchange="toggleNotifications()" style="opacity:0;width:0;height:0;">
+        <span style="position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,0.1);transition:0.4s;border-radius:34px;"></span>
+        <span style="position:absolute;content:'';height:26px;width:26px;left:4px;bottom:4px;background:white;transition:0.4s;border-radius:50%;"></span>
+      </label>
+    </div>
+    <div id="notification-status" style="font-size:0.85rem;color:rgba(255,255,255,0.6);padding:12px;background:rgba(255,255,255,0.03);border-radius:8px;margin-bottom:20px;display:none;">
+      <span id="notification-status-text"></span>
+    </div>
 <div class="divider" style="margin:30px 0">📅 Pay Cycle Settings</div>
 <div class="warning-box"><p>⚠️ <strong>Important:</strong> Changing your pay cycle start date will recalculate all periods.</p></div><div class="modal-buttons"><button class="modal-btn cancel" onclick="closeSettings()">Cancel</button><button class="modal-btn save" onclick="saveSettings()">Save Changes</button></div></div></div>
 <div id="edit-modal" class="modal"><div class="modal-content"><div class="modal-header"><div class="modal-title">Edit Expense</div><button class="close-btn" onclick="closeEditModal()">✕</button></div><div class="input-group"><label class="input-label">Category</label><input type="text" id="edit-category" placeholder="e.g., Groceries"></div><div class="input-group"><label class="input-label">Amount</label><input type="number" id="edit-amount" placeholder="0.00" step="0.01"></div><div class="modal-buttons"><button class="modal-btn cancel" onclick="closeEditModal()">Cancel</button><button class="modal-btn save" onclick="saveEdit()">Save Changes</button></div></div></div>
@@ -721,9 +751,199 @@ function dismissUtilityDisclaimer(permanent) {
   }
 }
 
-// Show disclaimer when page loads
+// Push Notification Functions
+let notificationPermission = 'default';
+
+async function initNotifications() {
+  if (!('Notification' in window)) {
+    console.log('Notifications not supported');
+    return;
+  }
+
+  const enabled = localStorage.getItem('notificationsEnabled') === 'true';
+  const toggle = document.getElementById('notifications-toggle');
+  if (toggle) {
+    toggle.checked = enabled;
+  }
+
+  notificationPermission = Notification.permission;
+  updateNotificationStatus();
+}
+
+async function toggleNotifications() {
+  const toggle = document.getElementById('notifications-toggle');
+  const enabled = toggle.checked;
+
+  if (enabled) {
+    if (Notification.permission === 'default') {
+      const permission = await Notification.requestPermission();
+      notificationPermission = permission;
+
+      if (permission === 'granted') {
+        localStorage.setItem('notificationsEnabled', 'true');
+        showNotificationStatus('✅ Notifications enabled!', 'success');
+
+        setTimeout(() => {
+          showTestNotification();
+        }, 500);
+
+        schedulePayPeriodNotifications();
+      } else {
+        toggle.checked = false;
+        showNotificationStatus('❌ Permission denied. Enable in browser settings.', 'error');
+      }
+    } else if (Notification.permission === 'granted') {
+      localStorage.setItem('notificationsEnabled', 'true');
+      showNotificationStatus('✅ Notifications enabled!', 'success');
+      schedulePayPeriodNotifications();
+    } else {
+      toggle.checked = false;
+      showNotificationStatus('❌ Permission denied. Enable in browser settings.', 'error');
+    }
+  } else {
+    localStorage.setItem('notificationsEnabled', 'false');
+    showNotificationStatus('🔕 Notifications disabled', 'info');
+    cancelScheduledNotifications();
+  }
+
+  updateNotificationStatus();
+}
+
+function showTestNotification() {
+  if (Notification.permission === 'granted') {
+    const notification = new Notification('💰 Expense Tracker', {
+      body: 'Notifications are now enabled! You\'ll get reminders at the start of each pay period.',
+      icon: '💰',
+      badge: '💰',
+      tag: 'test-notification',
+      requireInteraction: false
+    });
+
+    notification.onclick = function() {
+      window.focus();
+      notification.close();
+    };
+  }
+}
+
+function schedulePayPeriodNotifications() {
+  const checkInterval = 1000 * 60 * 60 * 24;
+
+  const intervalId = setInterval(() => {
+    checkAndSendNotification();
+  }, checkInterval);
+
+  localStorage.setItem('notificationIntervalId', intervalId);
+  checkAndSendNotification();
+}
+
+function cancelScheduledNotifications() {
+  const intervalId = localStorage.getItem('notificationIntervalId');
+  if (intervalId) {
+    clearInterval(parseInt(intervalId));
+    localStorage.removeItem('notificationIntervalId');
+  }
+}
+
+function checkAndSendNotification() {
+  if (localStorage.getItem('notificationsEnabled') !== 'true') return;
+  if (Notification.permission !== 'granted') return;
+
+  const period = calculateCurrentPeriod(0);
+  if (!period) return;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const periodStart = new Date(period.start);
+  periodStart.setHours(0, 0, 0, 0);
+
+  if (today.getTime() === periodStart.getTime()) {
+    const lastNotification = localStorage.getItem('lastNotificationDate');
+    const todayStr = today.toISOString().split('T')[0];
+
+    if (lastNotification !== todayStr) {
+      sendPayPeriodNotification(period);
+      localStorage.setItem('lastNotificationDate', todayStr);
+    }
+  }
+}
+
+function sendPayPeriodNotification(period) {
+  const salary = salaries[period.key] || 0;
+  const formattedDates = formatPeriodDates(period.start, period.end);
+
+  const notification = new Notification('💰 New Pay Period Started!', {
+    body: `${formattedDates}\nSalary: $${salary.toFixed(2)}\nTime to track your expenses!`,
+    icon: '💰',
+    badge: '💰',
+    tag: 'pay-period-' + period.key,
+    requireInteraction: false,
+    vibrate: [200, 100, 200]
+  });
+
+  notification.onclick = function() {
+    window.focus();
+    notification.close();
+  };
+}
+
+function formatPeriodDates(start, end) {
+  const options = { month: 'short', day: 'numeric' };
+  return start.toLocaleDateString('en-US', options) + ' - ' + end.toLocaleDateString('en-US', options);
+}
+
+function updateNotificationStatus() {
+  const statusDiv = document.getElementById('notification-status');
+  const statusText = document.getElementById('notification-status-text');
+
+  if (!statusDiv || !statusText) return;
+
+  const enabled = localStorage.getItem('notificationsEnabled') === 'true';
+
+  if (!('Notification' in window)) {
+    statusDiv.style.display = 'block';
+    statusText.innerHTML = '⚠️ Notifications not supported in this browser';
+    statusDiv.style.background = 'rgba(239,68,68,0.1)';
+  } else if (enabled && Notification.permission === 'granted') {
+    statusDiv.style.display = 'block';
+    statusText.innerHTML = '✅ Notifications active';
+    statusDiv.style.background = 'rgba(16,185,129,0.1)';
+  } else if (Notification.permission === 'denied') {
+    statusDiv.style.display = 'block';
+    statusText.innerHTML = '❌ Enable notifications in browser settings';
+    statusDiv.style.background = 'rgba(239,68,68,0.1)';
+  } else {
+    statusDiv.style.display = 'none';
+  }
+}
+
+function showNotificationStatus(message, type) {
+  const statusDiv = document.getElementById('notification-status');
+  const statusText = document.getElementById('notification-status-text');
+
+  if (!statusDiv || !statusText) return;
+
+  statusText.textContent = message;
+  statusDiv.style.display = 'block';
+
+  const colors = {
+    success: 'rgba(16,185,129,0.1)',
+    error: 'rgba(239,68,68,0.1)',
+    info: 'rgba(59,130,246,0.1)'
+  };
+
+  statusDiv.style.background = colors[type] || colors.info;
+
+  setTimeout(() => {
+    statusDiv.style.display = 'none';
+  }, 5000);
+}
+
+// Initialize everything on load
 document.addEventListener('DOMContentLoaded', function() {
   showUtilityDisclaimer();
+  initNotifications();
 });
 
 </script>
