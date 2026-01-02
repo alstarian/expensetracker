@@ -154,6 +154,24 @@
 <div class="pane monthly">
 <div class="pane-header"><div class="pane-title">Monthly Utilities</div></div>
 <div class="month-nav"><button onclick="changeMonth(-1)">◀</button><div class="month-display" id="month-display">Loading...</div><button onclick="changeMonth(1)">▶</button></div>
+    <div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.3);border-radius:12px;padding:16px;margin:16px 0 20px 0;">
+      <div style="display:flex;align-items:start;gap:12px;">
+        <span style="font-size:1.5rem;flex-shrink:0;">📊</span>
+        <div>
+          <div style="font-weight:700;color:#8b5cf6;margin-bottom:6px;font-size:0.95rem;">📌 Tracking Only - Not Added to Expenses</div>
+          <p style="margin:0;font-size:0.85rem;line-height:1.6;color:rgba(255,255,255,0.85);">
+            This section is for <strong style="color:#8b5cf6;">tracking your monthly utility bills</strong> and viewing analytics. 
+            <span style="display:block;margin-top:8px;padding:8px;background:rgba(239,68,68,0.1);border-radius:6px;border-left:3px solid rgba(239,68,68,0.5);">
+              <strong style="color:#ef4444;">⚠️ Not Auto-Added:</strong> These utilities are <strong>NOT automatically included</strong> in your bi-weekly expenses.
+            </span>
+            <span style="display:block;margin-top:8px;color:rgba(255,255,255,0.7);font-size:0.8rem;">
+              💡 <em>To track a utility payment in your bi-weekly budget, add it manually as a regular expense.</em>
+            </span>
+          </p>
+        </div>
+      </div>
+    </div>
+
 <div class="summary"><div class="summary-item full-width"><div class="summary-label">Total Bills</div><div class="summary-value" id="monthly-total">$0</div></div></div>
 <div class="input-group"><label class="input-label">Utility Type</label><select id="utility-type"><option value="">Select utility...</option><option value="💧 Water">💧 Water</option><option value="🔥 Gas">🔥 Gas</option><option value="⚡ Hydro">⚡ Hydro</option><option value="📡 Internet">📡 Internet</option><option value="📱 Phone">📱 Phone</option><option value="🏠 Home Insurance">🏠 Home Insurance</option><option value="🚗 Car Insurance">🚗 Car Insurance</option><option value="Other">Other</option></select></div>
 <div class="input-group" id="custom-utility-group" style="display:none"><label class="input-label">Custom Utility</label><input type="text" id="custom-utility" placeholder="Enter utility name"></div>
