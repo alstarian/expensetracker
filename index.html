@@ -18,21 +18,12 @@
 
 .passcode-input-group { display: flex; gap: 10px; justify-content: center; margin: 30px 0; }
 .passcode-digit {
-      width: 50px;
-      height: 60px;
-      font-size: 28px;
-      text-align: center;
-      border: 2px solid rgba(255,255,255,0.2);
-      border-radius: 12px;
-      background: rgba(255,255,255,0.05);
-      color: white;
-      font-weight: 700;
-      transition: all 0.2s;
-      caret-color: #60a5fa;
-      line-height: 60px;
-      padding: 0;
-      box-sizing: border-box;
-    }
+  width: 50px !important; height: 60px; font-size: 1.5rem; text-align: center;
+  border: 2px solid rgba(255,255,255,0.2) !important; border-radius: 12px;
+  background: rgba(255,255,255,0.05) !important; color: #fff; font-weight: 700;
+  transition: all 0.3s; caret-color: transparent;
+  line-height: 60px; padding: 0;
+}
 .passcode-digit:focus {
   border-color: #fbbf24 !important; background: rgba(251,191,36,0.1) !important;
   transform: scale(1.1); box-shadow: 0 0 20px rgba(251,191,36,0.3);
